@@ -8,7 +8,7 @@
 -- USAGE: Other files access these via global variables
 -- ============================================================================
 
-RP_VERSION_TAG = "1.0.1"           -- Semantic version (sync with git tag)
-RP_BUILD_TIME = "2026-02-26 17:43:23" -- Build timestamp (updated on each build)
+RP_VERSION_TAG = "1.0.2"           -- Semantic version (sync with git tag)
+RP_BUILD_TIME = "2026-02-26 21:09:59" -- Build timestamp (updated on each build)
 RP_PRODUCTION_BUILD = true  -- true in release builds, false in dev
 

@@ -788,22 +788,13 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
         -- Check if EreaRpPlayerDB exists
         if EreaRpPlayerDB then
             Log("EreaRpPlayerDB exists: " .. type(EreaRpPlayerDB))
-            if EreaRpPlayerDB.inventory then
-                Log("EreaRpPlayerDB.inventory exists, count: " .. table.getn(EreaRpPlayerDB.inventory))
-            else
-                Log("EreaRpPlayerDB.inventory is nil!")
-            end
         else
             Log("EreaRpPlayerDB is nil!")
         end
 
-        -- Ensure inventory table exists
-        EreaRpPlayerDB.inventory = EreaRpPlayerDB.inventory or {}
-        Log("After safety check, inventory count: " .. table.getn(EreaRpPlayerDB.inventory))
-
         -- Migrate inventory to v0.1.1 (add customText and customNumber fields)
         local migrated = false
-        for i = 1, table.getn(EreaRpPlayerDB.inventory) do
+        for i = 1, table.getn(EreaRpPlayerDB.inventory or {}) do
             local item = EreaRpPlayerDB.inventory[i]
 
             if not item.customText then
@@ -822,27 +813,19 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r Inventory migrated to v0.1.1", 0, 1, 0)
         end
 
-        -- Add welcome item if inventory is empty (first time use)
-        if table.getn(EreaRpPlayerDB.inventory) == 0 then
-            Log("Inventory is empty, creating welcome letter")
-            local welcomeItem = {
-                id = 0,
-                name = "Welcome to RP Player",
-                icon = "Interface\Icons\INV_Misc_Note_01",
-                tooltip = "Quick start guide",
-                content = "RP PLAYER GUIDE\n\n" ..
-                    "Left-click items to read. Right-click for options.\n\n" ..
-                    "Drag items to player portraits to give or show.\n\n" ..
-                    "Use /rpplayer to open bag.",
-                guid = "system-welcome-0",
-                customText = "",  -- v0.1.1: Instance-specific text
-                customNumber = 0  -- v0.1.1: Instance-specific number
-            }
-            table.insert(EreaRpPlayerDB.inventory, welcomeItem)
-            Log("Welcome letter inserted, new count: " .. table.getn(EreaRpPlayerDB.inventory))
-            DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r Welcome letter added to inventory", 0, 1, 0)
+        -- Check if system-welcome-db inventory is empty and add welcome item if needed
+        local systemDbInventory = EreaRpPlayerDB.inventories["system-welcome-db"] or {}
+        if table.getn(systemDbInventory) == 0 then
+            Log("system-welcome-db inventory is empty, adding system-welcome-0")
+            local welcomeItem = inventory.CreateItemInstance("system-welcome-0", "", 0)
+            table.insert(systemDbInventory, welcomeItem)
+            EreaRpPlayerDB.inventories["system-welcome-db"] = systemDbInventory
+            if EreaRpPlayerDB.activeDatabaseId == "system-welcome-db" then
+                EreaRpPlayerDB.inventory = systemDbInventory
+            end
+            Log("Added system-welcome-0 to system-welcome-db inventory")
         else
-            Log("Inventory not empty, count: " .. table.getn(EreaRpPlayerDB.inventory))
+            Log("system-welcome-db inventory already has items")
         end
 
         -- Cleanup duplicate slots before refreshing bag

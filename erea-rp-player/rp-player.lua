@@ -130,36 +130,66 @@ EreaRpPlayer_ChunkedSyncs = EreaRpPlayer_ChunkedSyncs or {}  -- {messageId -> {m
 -- ============================================================================
 Log("RPPlayer.lua file loading...")
 EreaRpPlayerDB = EreaRpPlayerDB or {
-    inventory = {
-        {
-            id = 0,  -- System item (not from GM)
-            name = "Welcome to RP Player",
-            icon = "Interface\\Icons\\INV_Misc_Note_01",
-            tooltip = "Quick start guide",
-            content = "RP PLAYER GUIDE\n\n" ..
-                "Left-click items to read. Right-click for options.\n\n" ..
-                "Drag items to player portraits to give or show.\n\n" ..
-                "Use /rpplayer to open bag.",
-            guid = "system-welcome-0"
-        }
+    databases = { 
+        ["system-welcome-db"] = {  
+            metadata = { id = "system", name = "RP Player Guide" }, 
+            items = {
+                [1] = {
+                    id = 1,
+                    guid = "system-welcome-0",
+                    name = "Welcome to RP Player",
+                    icon = "Interface\\Icons\\INV_Misc_Note_01",
+                    tooltip = "Quick start guide",
+                    content = "WELCOME TO RP PLAYER\n\n" ..
+                        "This bag holds your roleplay items. " ..
+                        "Items are given to you by a Game Master " ..
+                        "or other players during RP events.\n\n" ..
+                        "— OPENING YOUR BAG —\n" ..
+                        "Type /rpplayer to open or close the bag " ..
+                        "at any time.\n\n" ..
+                        "— READING AN ITEM —\n" ..
+                        "Left-click any item to open it and read " ..
+                        "its contents. Some items have dynamic " ..
+                        "text written into them by other players.\n\n" ..
+                        "— USING AN ITEM —\n" ..
+                        "When you open an item, action buttons " ..
+                        "may appear at the bottom. Actions vary " ..
+                        "by item: consume a charge, write text " ..
+                        "into it, trigger a scene, or destroy it. " ..
+                        "Some actions require another player " ..
+                        "to act at the same time.\n\n" ..
+                        "— GIVING AN ITEM —\n" ..
+                        "Right-click an item for options including " ..
+                        "Give and Show. Giving transfers the item " ..
+                        "to another player's bag. Showing shares " ..
+                        "a read-only view without transferring.\n\n" ..
+                        "— CHARGES —\n" ..
+                        "Some items have a limited number of uses " ..
+                        "shown as a number on the item icon. " ..
+                        "When charges reach zero the item " ..
+                        "is automatically removed.\n\n" ..
+                        "— STORY ARCS & GMs —\n" ..
+                        "The dropdown at the top of your bag " ..
+                        "shows which GM database is currently " ..
+                        "active. Your GM will select the correct " ..
+                        "arc for you — no action needed on " ..
+                        "your part.",
+                    contentTemplate = "",
+                    defaultHandoutText = "",
+                    actions = {},
+                    initialCounter = 0
+                }
+            },
+            cinematicLibrary = {}, 
+            scriptLibrary = {} 
+        } 
     },
-    bagFramePos = nil,
-    readFramePos = nil,
-    -- NEW: Stores entire GM database locally for GUID lookup
-    syncedDatabase = nil,         -- Retired: migrated into databases[id] on load
-    syncState = {                 -- Sync status tracking (derived from activeDatabaseId)
-        databaseId = nil,
-        databaseName = nil,
-        version = nil,
-        checksum = nil,
-        lastSyncTime = nil
+    inventories = {
+        ["system-welcome-db"] = {}
     },
-    -- Multi-tenant database support (v0.3.0+)
-    databases = {},               -- { [dbId] = { items, cinematicLibrary, scriptLibrary, metadata } }
-    inventories = {},             -- { [dbId] = { {guid, slot, customText, customNumber}, … } }
-    activeDatabaseId = nil        -- Currently displayed campaign
+    inventory   = {},
+    activeDatabaseId = "system-welcome-db"
 }
-Log("EreaRpPlayerDB initialized, inventory count: " .. table.getn(EreaRpPlayerDB.inventory))
 
 -- ============================================================================
 -- ENSURE DATABASE FIELDS EXIST (for existing saved variables)
@@ -201,6 +231,9 @@ if not EreaRpPlayerDB.databases then
 end
 if not EreaRpPlayerDB.inventories then
     EreaRpPlayerDB.inventories = {}
+end
+if not EreaRpPlayerDB.inventory then
+    EreaRpPlayerDB.inventory = {}
 end
 
 -- Backward compatibility: migrate old fields to new structure if they exist
