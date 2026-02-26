@@ -68,7 +68,7 @@ end
 -- @param animKey: string key into ANIMATION_REGISTRY
 -- @returns: state table (pass to UpdateAnimation), or nil if key not found
 -- ============================================================================
-local function StartAnimation(texture, animKey)
+local function StartAnimation(texture, animKey, loopMode)
     local anim = GetAnimation(animKey)
     if not anim then return nil end
 
@@ -91,7 +91,8 @@ local function StartAnimation(texture, animKey)
         fps = anim.fps,
         elapsed = 0,
         currentFrame = 0,
-        direction = 1  -- 1 = forward, -1 = backward (ping-pong)
+        direction = 1,  -- 1 = forward, -1 = backward (ping-pong only)
+        loopMode = loopMode or "pingpong"  -- "pingpong" | "cycle"
     }
 end
 
@@ -118,15 +119,23 @@ local function UpdateAnimation(state, elapsed, texture)
     -- Advance frame (may skip multiple if lag spike)
     while state.elapsed >= frameDuration do
         state.elapsed = state.elapsed - frameDuration
-        state.currentFrame = state.currentFrame + state.direction
 
-        -- Ping-pong: reverse direction at boundaries
-        if state.currentFrame >= state.totalFrames - 1 then
-            state.currentFrame = state.totalFrames - 1
-            state.direction = -1
-        elseif state.currentFrame <= 0 then
-            state.currentFrame = 0
-            state.direction = 1
+        if state.loopMode == "cycle" then
+            -- Cycle: play forward, wrap from last frame back to first
+            state.currentFrame = state.currentFrame + 1
+            if state.currentFrame >= state.totalFrames then
+                state.currentFrame = 0
+            end
+        else
+            -- Ping-pong: play forward then backward, reversing at each boundary
+            state.currentFrame = state.currentFrame + state.direction
+            if state.currentFrame >= state.totalFrames - 1 then
+                state.currentFrame = state.totalFrames - 1
+                state.direction = -1
+            elseif state.currentFrame <= 0 then
+                state.currentFrame = 0
+                state.direction = 1
+            end
         end
     end
 

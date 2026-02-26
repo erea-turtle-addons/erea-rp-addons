@@ -74,6 +74,19 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
     animLabel:SetText("Animation:")
     animLabel:Hide()
 
+    -- Loop mode dropdown: [Ping-Pong, Cycle] — only visible for animation type
+    dropdownCounter = dropdownCounter + 1
+    local loopModeDropdownName = "EreaRpMasterSideEditorLoopMode" .. dropdownCounter
+    local loopModeDropdown = CreateFrame("Frame", loopModeDropdownName, parent, "UIDropDownMenuTemplate")
+    loopModeDropdown:SetPoint("TOPLEFT", xOffset, yOffset - 96)
+    UIDropDownMenu_SetWidth(72, loopModeDropdown)
+    loopModeDropdown:Hide()
+
+    local loopModeLabel = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    loopModeLabel:SetPoint("TOPLEFT", xOffset + 10, yOffset - 80)
+    loopModeLabel:SetText("Loop:")
+    loopModeLabel:Hide()
+
     -- Live preview: 36x36 frame with VideoPlayer, to the right of the animation dropdown
     previewCounter = previewCounter + 1
     local previewFrameName = "EreaRpMasterSideEditorPreview" .. previewCounter
@@ -88,10 +101,10 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
 
     local previewPlayer = videoPlayerLib.New(previewTexture)
 
-    local function SetPreviewAnimation(animKey)
+    local function SetPreviewAnimation(animKey, loopMode)
         previewPlayer:Stop()
         if animKey and animKey ~= "" then
-            previewPlayer:Play(animKey)
+            previewPlayer:Play(animKey, loopMode)
             if previewPlayer:IsPlaying() then
                 previewFrame:Show()
             else
@@ -109,6 +122,8 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
             unitLabel:Show()
             animDropdown:Hide()
             animLabel:Hide()
+            loopModeDropdown:Hide()
+            loopModeLabel:Hide()
             previewFrame:Hide()
             previewPlayer:Stop()
         elseif selectedType == "animation" then
@@ -116,14 +131,19 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
             unitLabel:Hide()
             animDropdown:Show()
             animLabel:Show()
+            loopModeDropdown:Show()
+            loopModeLabel:Show()
             -- Restore preview if an animation is selected
             local currentAnim = UIDropDownMenu_GetSelectedValue(animDropdown) or ""
-            SetPreviewAnimation(currentAnim)
+            local currentLoopMode = UIDropDownMenu_GetSelectedValue(loopModeDropdown) or "pingpong"
+            SetPreviewAnimation(currentAnim, currentLoopMode)
         else
             unitDropdown:Hide()
             unitLabel:Hide()
             animDropdown:Hide()
             animLabel:Hide()
+            loopModeDropdown:Hide()
+            loopModeLabel:Hide()
             previewFrame:Hide()
             previewPlayer:Stop()
         end
@@ -205,13 +225,41 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
                 info.func = function()
                     UIDropDownMenu_SetSelectedValue(animDropdown, selectedKey)
                     UIDropDownMenu_SetText(selectedLabel, animDropdown)
-                    SetPreviewAnimation(selectedKey)
+                    local currentLoopMode = UIDropDownMenu_GetSelectedValue(loopModeDropdown) or "pingpong"
+                    SetPreviewAnimation(selectedKey, currentLoopMode)
                 end
             end
             UIDropDownMenu_AddButton(info)
         end
     end)
     UIDropDownMenu_SetText("(None)", animDropdown)
+
+    -- Initialize loop mode dropdown
+    UIDropDownMenu_Initialize(loopModeDropdown, function()
+        local modes = {
+            { text = "Ping-Pong", value = "pingpong" },
+            { text = "Cycle",     value = "cycle" }
+        }
+        for i = 1, table.getn(modes) do -- Lua 5.0: table.getn
+            local m = modes[i]
+            local info = {}
+            info.text = m.text
+            info.value = m.value
+            do
+                local val = m.value
+                local txt = m.text
+                info.func = function()
+                    UIDropDownMenu_SetSelectedValue(loopModeDropdown, val)
+                    UIDropDownMenu_SetText(txt, loopModeDropdown)
+                    local currentAnim = UIDropDownMenu_GetSelectedValue(animDropdown) or ""
+                    SetPreviewAnimation(currentAnim, val)
+                end
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+    UIDropDownMenu_SetSelectedValue(loopModeDropdown, "pingpong")
+    UIDropDownMenu_SetText("Ping-Pong", loopModeDropdown)
 
     -- Getters/setters
     function side:GetType()
@@ -224,6 +272,10 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
 
     function side:GetAnimationKey()
         return UIDropDownMenu_GetSelectedValue(animDropdown) or ""
+    end
+
+    function side:GetLoopMode()
+        return UIDropDownMenu_GetSelectedValue(loopModeDropdown) or "pingpong"
     end
 
     function side:SetType(val)
@@ -257,7 +309,22 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
         -- Only update live preview when animation type is active;
         -- avoids showing stale animation keys stored alongside a portrait/none type
         if side:GetType() == "animation" then
-            SetPreviewAnimation(val)
+            local currentLoopMode = UIDropDownMenu_GetSelectedValue(loopModeDropdown) or "pingpong"
+            SetPreviewAnimation(val, currentLoopMode)
+        end
+    end
+
+    function side:SetLoopMode(val)
+        local mode = val or "pingpong"
+        UIDropDownMenu_SetSelectedValue(loopModeDropdown, mode)
+        if mode == "cycle" then
+            UIDropDownMenu_SetText("Cycle", loopModeDropdown)
+        else
+            UIDropDownMenu_SetText("Ping-Pong", loopModeDropdown)
+        end
+        if side:GetType() == "animation" then
+            local currentAnim = UIDropDownMenu_GetSelectedValue(animDropdown) or ""
+            SetPreviewAnimation(currentAnim, mode)
         end
     end
 
@@ -282,6 +349,12 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
         animLabel:ClearAllPoints()
         animLabel:SetPoint("TOPLEFT", newXOffset + 10, yOffset - 42)
 
+        loopModeLabel:ClearAllPoints()
+        loopModeLabel:SetPoint("TOPLEFT", newXOffset + 10, yOffset - 80)
+
+        loopModeDropdown:ClearAllPoints()
+        loopModeDropdown:SetPoint("TOPLEFT", newXOffset, yOffset - 96)
+
         -- Preview is anchored relative to animDropdown, moves automatically.
 
         if newColumnWidth then
@@ -290,9 +363,10 @@ function EreaRpMasterSideEditor.Create(parent, sideLabel, xOffset, yOffset)
             UIDropDownMenu_SetWidth(typeDdWidth, typeDropdown)
             UIDropDownMenu_SetWidth(typeDdWidth, unitDropdown)
             UIDropDownMenu_SetWidth(animDdWidth, animDropdown)
+            UIDropDownMenu_SetWidth(animDdWidth, loopModeDropdown)
         end
     end
 
-    -- Total height consumed: header (18) + type dropdown (40) + sub-field (40) + spacing
-    return side, 100
+    -- Total height consumed: header (18) + type dropdown (40) + anim sub-field (40) + loop mode (40)
+    return side, 140
 end

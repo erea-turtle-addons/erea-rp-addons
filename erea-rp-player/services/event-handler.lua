@@ -620,12 +620,14 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                     leftConfig = {
                         type = cinematic.leftType or "none",
                         portraitUnit = cinematic.leftPortraitUnit or "player",
-                        animationKey = cinematic.leftAnimationKey or ""
+                        animationKey = cinematic.leftAnimationKey or "",
+                        loopMode = cinematic.leftLoopMode or "pingpong"
                     }
                     rightConfig = {
                         type = cinematic.rightType or "none",
                         portraitUnit = cinematic.rightPortraitUnit or "player",
-                        animationKey = cinematic.rightAnimationKey or ""
+                        animationKey = cinematic.rightAnimationKey or "",
+                        loopMode = cinematic.rightLoopMode or "pingpong"
                     }
                     Log("CINEMATIC: new format, left=" .. tostring(cinematic.leftType) .. " right=" .. tostring(cinematic.rightType))
                 else

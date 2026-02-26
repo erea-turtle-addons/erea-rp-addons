@@ -47,7 +47,7 @@ local function New(texture)
     -- ========================================================================
     -- Play(animKey) - Start playing a registered animation
     -- ========================================================================
-    function player:Play(animKey)
+    function player:Play(animKey, loopMode)
         -- Stop any running animation first
         if animState then
             cinematicAnims.StopAnimation(animState, texture)
@@ -59,7 +59,7 @@ local function New(texture)
             return
         end
 
-        animState = cinematicAnims.StartAnimation(texture, animKey)
+        animState = cinematicAnims.StartAnimation(texture, animKey, loopMode)
         if animState then
             helperFrame:Show()
         else

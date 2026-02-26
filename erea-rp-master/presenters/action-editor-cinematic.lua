@@ -253,9 +253,11 @@ function EreaRpMasterCinematicComponent.Create(parent, yOffset)
             leftType             = leftSide:GetType(),
             leftPortraitUnit     = leftSide:GetPortraitUnit(),
             leftAnimationKey     = leftSide:GetAnimationKey(),
+            leftLoopMode         = leftSide:GetLoopMode(),
             rightType            = rightSide:GetType(),
             rightPortraitUnit    = rightSide:GetPortraitUnit(),
-            rightAnimationKey    = rightSide:GetAnimationKey()
+            rightAnimationKey    = rightSide:GetAnimationKey(),
+            rightLoopMode        = rightSide:GetLoopMode()
         }
     end
 
@@ -270,9 +272,11 @@ function EreaRpMasterCinematicComponent.Create(parent, yOffset)
             leftSide:SetType(data.leftType)
             leftSide:SetPortraitUnit(data.leftPortraitUnit or "player")
             leftSide:SetAnimationKey(data.leftAnimationKey or "")
+            leftSide:SetLoopMode(data.leftLoopMode or "pingpong")
             rightSide:SetType(data.rightType or "none")
             rightSide:SetPortraitUnit(data.rightPortraitUnit or "player")
             rightSide:SetAnimationKey(data.rightAnimationKey or "")
+            rightSide:SetLoopMode(data.rightLoopMode or "pingpong")
         else
             -- Legacy: portrait on left, animation on right if animationKey exists
             leftSide:SetType("portrait")
@@ -293,13 +297,15 @@ function EreaRpMasterCinematicComponent.Create(parent, yOffset)
         titleBox:SetText("")
         msgBox:SetText("")
         leftSide:SetType("none")
+        leftSide:SetLoopMode("pingpong")
         rightSide:SetType("none")
+        rightSide:SetLoopMode("pingpong")
         scriptRefDisplay:SetText("(No scripts found)")
     end
 
-    -- Total height: sides start at yOffset-54, consume 100px → bottom at yOffset-154.
+    -- Total height: sides start at yOffset-54, consume 140px → bottom at yOffset-194.
     -- Text container: top at yOffset-72, height 90 → bottom at yOffset-162.
     -- Return the deeper of the two plus a small bottom margin.
-    local totalHeight = 162 + 8  -- 8px bottom padding
+    local totalHeight = 194 + 8  -- 8px bottom padding
     return comp, totalHeight
 end

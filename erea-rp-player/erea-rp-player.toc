@@ -2,7 +2,7 @@
 ## Title: E'rea RP Player
 ## Notes: Player addon for managing RP quest items inventory
 ## Author: Erea
-## Version: 1.0.0
+## Version: 1.0.1
 ## DefaultState: enabled
 ## SavedVariablesPerCharacter: EreaRpPlayerDB, EreaRpPlayerDebugLog
 ## RequiredDeps: erea-rp-common

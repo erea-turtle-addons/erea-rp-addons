@@ -254,7 +254,7 @@ local function SetupSide(frame, side, config, senderName)
 
         local animKey = config.animationKey
         if animKey and animKey ~= "" and animPlayerRef then
-            animPlayerRef:Play(animKey)
+            animPlayerRef:Play(animKey, config.loopMode)
             if animPlayerRef:IsPlaying() then
                 border:Show()
                 return true
@@ -304,7 +304,7 @@ function EreaRpCinematicFrame:ShowDialogue(senderName, speakerName, dialogueText
         end
 
         if animationKey and animationKey ~= "" then
-            rightConfig = { type = "animation", animationKey = animationKey }
+            rightConfig = { type = "animation", animationKey = animationKey, loopMode = "pingpong" }
         else
             rightConfig = { type = "none" }
         end

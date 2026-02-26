@@ -70,12 +70,14 @@ local function PreviewCinematic(methodFrame)
     local leftConfig = {
         type = previewData.leftType or "none",
         portraitUnit = previewData.leftPortraitUnit or "player",
-        animationKey = previewData.leftAnimationKey or ""
+        animationKey = previewData.leftAnimationKey or "",
+        loopMode = previewData.leftLoopMode or "pingpong"
     }
     local rightConfig = {
         type = previewData.rightType or "none",
         portraitUnit = previewData.rightPortraitUnit or "player",
-        animationKey = previewData.rightAnimationKey or ""
+        animationKey = previewData.rightAnimationKey or "",
+        loopMode = previewData.rightLoopMode or "pingpong"
     }
 
     EreaRpCinematicFrame:ShowDialogue(playerName, speakerName, dialogueText, leftConfig, rightConfig)
