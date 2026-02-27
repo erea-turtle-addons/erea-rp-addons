@@ -34,8 +34,9 @@ function EreaRpMasterGiveItemFrame:Initialize()
     self.iconTexture = EreaRpMasterGiveItemFrameIconFrameIconTexture
     self.itemName = EreaRpMasterGiveItemFrameItemName
     self.messageEditBox = EreaRpMasterGiveItemFrameMessageEditBox
-    self.customTextEditBox = EreaRpMasterGiveItemFrameCustomTextEditBox
-    self.counterEditBox = EreaRpMasterGiveItemFrameCounterEditBox
+    self.customTextEditBox     = EreaRpMasterGiveItemFrameCustomTextEditBox
+    self.additionalTextEditBox = EreaRpMasterGiveItemFrameAdditionalTextEditBox
+    self.counterEditBox        = EreaRpMasterGiveItemFrameCounterEditBox
     self.giveButton = EreaRpMasterGiveItemFrameGiveButton
     self.cancelButton = EreaRpMasterGiveItemFrameCancelButton
 
@@ -156,6 +157,7 @@ function EreaRpMasterGiveItemFrame:Open(committedItem)
     -- Pre-fill fields from item defaults
     self.messageEditBox:SetText(committedItem.defaultHandoutText or "")
     self.customTextEditBox:SetText("")
+    self.additionalTextEditBox:SetText("")
     self.counterEditBox:SetText(tostring(committedItem.initialCounter or 0))
 
     self:Show()
@@ -187,11 +189,12 @@ function EreaRpMasterGiveItemFrame:GiveCurrentItem()
         return
     end
 
-    local message = self.messageEditBox:GetText() or ""
-    local customText = self.customTextEditBox:GetText() or ""
-    local counter = tonumber(self.counterEditBox:GetText()) or 0
+    local message        = self.messageEditBox:GetText() or ""
+    local customText     = self.customTextEditBox:GetText() or ""
+    local additionalText = self.additionalTextEditBox:GetText() or ""
+    local counter        = tonumber(self.counterEditBox:GetText()) or 0
 
-    EreaRpMasterEventHandler:GiveItem(_selectedPlayer, _currentItem.guid, message, customText, counter)
+    EreaRpMasterEventHandler:GiveItem(_selectedPlayer, _currentItem.guid, message, customText, counter, additionalText)
 
     self:Hide()
 end

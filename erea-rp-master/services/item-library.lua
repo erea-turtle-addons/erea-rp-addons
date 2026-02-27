@@ -216,10 +216,26 @@ function EreaRpMasterItemLibrary:CommitDatabase()
     -- Lua 5.0: "" is truthy, so check explicitly for empty string.
     local existingId = EreaRpMasterDB.databaseId
     if existingId == "" then existingId = nil end
+
+    -- Merge cinematicLibrary and mergeLibrary so players can look up merge cinematics
+    -- by their group ID. Merge entries are shape-compatible with cinematic entries;
+    -- the extra fields (amount, description) are ignored by CreateCommittedDatabase.
+    local mergedCinematicLibrary = {}
+    if EreaRpMasterDB.cinematicLibrary then
+        for id, entry in pairs(EreaRpMasterDB.cinematicLibrary) do
+            mergedCinematicLibrary[id] = entry
+        end
+    end
+    if EreaRpMasterDB.mergeLibrary then
+        for id, entry in pairs(EreaRpMasterDB.mergeLibrary) do
+            mergedCinematicLibrary[id] = entry
+        end
+    end
+
     local committed = objectDatabase.CreateCommittedDatabase(
         EreaRpMasterDB.itemLibrary,
         databaseName,
-        EreaRpMasterDB.cinematicLibrary,
+        mergedCinematicLibrary,
         EreaRpMasterDB.scriptLibrary,
         existingId  -- nil on first commit → generates one
     )

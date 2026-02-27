@@ -296,7 +296,7 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             Log("WARNING: Received deprecated GIVE_CONTENT message - ignoring")
 
         elseif messageType == messaging.MESSAGE_TYPES.TRADE then
-            -- FORMAT v0.1.1: TRADE^targetName^objectGuid^customText^customNumber
+            -- FORMAT v0.2.2: TRADE^targetName^objectGuid^customText^customNumber^additionalText
             local targetName = parts[2]
             local myName = UnitName("player")
 
@@ -308,9 +308,10 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 return
             end
 
-            local objectGuid = parts[3] or ""
-            local customText = parts[4] or ""
-            local customNumber = tonumber(parts[5]) or 0
+            local objectGuid    = parts[3] or ""
+            local customText    = parts[4] or ""
+            local customNumber  = tonumber(parts[5]) or 0
+            local additionalText = parts[6] or ""
 
             -- Look up object in active database
             local activeDb = EreaRpPlayerDB.activeDatabaseId
@@ -333,8 +334,8 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 return
             end
 
-            -- v0.2.1: Create instance data only (minimal storage); TRADE has no additionalText
-            local instance = inventory.CreateItemInstance(objectGuid, customText, "", customNumber)
+            -- v0.2.2: Create instance data with additionalText
+            local instance = inventory.CreateItemInstance(objectGuid, customText, additionalText, customNumber)
 
             Log("TRADE complete - Item: " .. tostring(objectDef.name) .. " from " .. sender)
 

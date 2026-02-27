@@ -405,12 +405,13 @@ end
 local function SendTradeMessage(targetName, item)
     if not targetName or not item then return false end
 
-    -- Format v0.1.1: TRADE^targetName^objectGuid^customText^customNumber
-    local message = string.format("TRADE^%s^%s^%s^%s",
+    -- Format v0.2.2: TRADE^targetName^objectGuid^customText^customNumber^additionalText
+    local message = string.format("TRADE^%s^%s^%s^%s^%s",
         targetName,
         item.guid or "",
         item.customText or "",
-        tostring(item.customNumber or 0))
+        tostring(item.customNumber or 0),
+        item.additionalText or "")
 
     local distribution = GetDistribution(targetName)
     SendAddonMessage(ADDON_PREFIX, message, distribution)

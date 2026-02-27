@@ -3,7 +3,7 @@
   <!-- Give Item Dialog -->
   <Frame name="EreaRpMasterGiveItemFrame" parent="UIParent" frameStrata="DIALOG" toplevel="true" enableMouse="true" movable="true" hidden="true">
     <Size>
-      <AbsDimension x="400" y="340"/>
+      <AbsDimension x="400" y="390"/>
     </Size>
     <Anchors>
       <Anchor point="CENTER"/>
@@ -77,11 +77,21 @@
           </Anchors>
         </FontString>
 
-        <FontString name="$parentCounterLabel" inherits="GameFontNormal" text="Counter:">
+        <FontString name="$parentAdditionalTextLabel" inherits="GameFontNormal" text="Additional text:">
           <Anchors>
             <Anchor point="TOPLEFT">
               <Offset>
                 <AbsDimension x="20" y="-250"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+
+        <FontString name="$parentCounterLabel" inherits="GameFontNormal" text="Counter:">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset>
+                <AbsDimension x="20" y="-300"/>
               </Offset>
             </Anchor>
           </Anchors>
@@ -247,6 +257,54 @@
           </OnEscapePressed>
           <OnTabPressed>
             this:ClearFocus()
+            EreaRpMasterGiveItemFrameAdditionalTextEditBox:SetFocus()
+          </OnTabPressed>
+        </Scripts>
+      </EditBox>
+
+      <!-- Additional Text EditBox -->
+      <EditBox name="$parentAdditionalTextEditBox" autoFocus="false">
+        <Size>
+          <AbsDimension x="360" y="24"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="20" y="-267"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="BACKGROUND">
+            <FontString inherits="ChatFontNormal" setAllPoints="true"/>
+          </Layer>
+        </Layers>
+        <FontString inherits="ChatFontNormal"/>
+        <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground"
+                  edgeFile="Interface\Tooltips\UI-Tooltip-Border"
+                  tile="true">
+          <EdgeSize>
+            <AbsValue val="10"/>
+          </EdgeSize>
+          <TileSize>
+            <AbsValue val="16"/>
+          </TileSize>
+          <BackgroundInsets>
+            <AbsInset left="3" right="3" top="3" bottom="3"/>
+          </BackgroundInsets>
+        </Backdrop>
+        <Scripts>
+          <OnLoad>
+            this:SetBackdropColor(0.1, 0.1, 0.1, 1)
+            this:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+            this:SetTextInsets(5, 5, 0, 0)
+            this:SetMaxLetters(255)
+          </OnLoad>
+          <OnEscapePressed>
+            this:ClearFocus()
+          </OnEscapePressed>
+          <OnTabPressed>
+            this:ClearFocus()
             EreaRpMasterGiveItemFrameCounterEditBox:SetFocus()
           </OnTabPressed>
         </Scripts>
@@ -260,7 +318,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="20" y="-267"/>
+              <AbsDimension x="20" y="-317"/>
             </Offset>
           </Anchor>
         </Anchors>
