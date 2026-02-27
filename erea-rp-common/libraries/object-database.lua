@@ -247,9 +247,11 @@ local function CreateCommittedDatabase(itemLibrary, databaseName, cinematicLibra
                 leftType = cinematic.leftType,
                 leftPortraitUnit = cinematic.leftPortraitUnit,
                 leftAnimationKey = cinematic.leftAnimationKey,
+                leftLoopMode = cinematic.leftLoopMode,
                 rightType = cinematic.rightType,
                 rightPortraitUnit = cinematic.rightPortraitUnit,
-                rightAnimationKey = cinematic.rightAnimationKey
+                rightAnimationKey = cinematic.rightAnimationKey,
+                rightLoopMode = cinematic.rightLoopMode
             }
         end
     end
@@ -732,7 +734,9 @@ local function SerializeDatabase(database)
             EscapeString(cinematic.rightType or "") .. "|~|" ..
             EscapeString(cinematic.rightPortraitUnit or "") .. "|~|" ..
             EscapeString(cinematic.rightAnimationKey or "") .. "|~|" ..
-            EscapeString(cinematic.scriptReferences or "")
+            EscapeString(cinematic.scriptReferences or "") .. "|~|" ..
+            EscapeString(cinematic.leftLoopMode or "") .. "|~|" ..
+            EscapeString(cinematic.rightLoopMode or "")
         cFirst = false
     end
 
@@ -965,6 +969,14 @@ local function DeserializeDatabase(serialized)
                 if table.getn(cParts) >= 11 then -- Lua 5.0: table.getn
                     local sr = UnescapeString(cParts[11])
                     if sr ~= "" then entry.scriptReferences = sr end
+                end
+
+                -- Loop modes (fields 12-13, optional for backward compatibility)
+                if table.getn(cParts) >= 13 then -- Lua 5.0: table.getn
+                    local llm = UnescapeString(cParts[12])
+                    if llm ~= "" then entry.leftLoopMode = llm end
+                    local rlm = UnescapeString(cParts[13])
+                    if rlm ~= "" then entry.rightLoopMode = rlm end
                 end
 
                 cinematicLibrary[cinematicId] = entry
