@@ -7,13 +7,14 @@
        PARAMETERS:
          - objectGuid: object_dropdown (required)
          - customText: text_with_placeholder (optional)
+         - additionalText: text_with_placeholder (optional)
          - customNumber: number (optional)
        USAGE: CreateFrame("Frame", name, parent, "EreaRpMasterCreateEditorTemplate")
        ====================================================================== -->
 
   <Frame name="EreaRpMasterCreateEditorTemplate" virtual="true">
     <Size>
-      <AbsDimension x="360" y="200"/>
+      <AbsDimension x="360" y="290"/>
     </Size>
     <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground"
               edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
@@ -50,7 +51,7 @@
               <Offset><AbsDimension x="10" y="-90"/></Offset>
             </Anchor>
           </Anchors>
-          <Text>Initial custom text (optional):</Text>
+          <Text>Custom text for new object:</Text>
         </FontString>
         <FontString name="$parentCustomTextHint" inherits="GameFontNormalSmall">
           <Anchors>
@@ -58,15 +59,39 @@
               <Offset><AbsDimension x="10" y="-138"/></Offset>
             </Anchor>
           </Anchors>
-          <Text>|cFF888888(Use {customText} to reference source item's custom text)|r</Text>
+          <Text>|cFF888888(Use {custom-text} to copy source item's text)|r</Text>
+        </FontString>
+        <FontString name="$parentAdditionalTextLabel" inherits="GameFontNormalSmall">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset><AbsDimension x="10" y="-158"/></Offset>
+            </Anchor>
+          </Anchors>
+          <Text>Additional text for new object:</Text>
+        </FontString>
+        <FontString name="$parentAdditionalTextHint" inherits="GameFontNormalSmall">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset><AbsDimension x="10" y="-200"/></Offset>
+            </Anchor>
+          </Anchors>
+          <Text>|cFF888888(Use {additional-text} to copy source item's additional text)|r</Text>
         </FontString>
         <FontString name="$parentCustomNumberLabel" inherits="GameFontNormalSmall">
           <Anchors>
             <Anchor point="TOPLEFT">
-              <Offset><AbsDimension x="10" y="-155"/></Offset>
+              <Offset><AbsDimension x="10" y="-220"/></Offset>
             </Anchor>
           </Anchors>
-          <Text>Initial custom number (optional):</Text>
+          <Text>Counter for new object:</Text>
+        </FontString>
+        <FontString name="$parentCustomNumberHint" inherits="GameFontNormalSmall">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset><AbsDimension x="10" y="-268"/></Offset>
+            </Anchor>
+          </Anchors>
+          <Text>|cFF888888(Use {item-counter} to copy source item's counter)|r</Text>
         </FontString>
       </Layer>
     </Layers>
@@ -94,13 +119,28 @@
           </OnEscapePressed>
         </Scripts>
       </EditBox>
+      <EditBox name="$parentAdditionalTextEdit" inherits="InputBoxTemplate" autoFocus="false">
+        <Size>
+          <AbsDimension x="340" y="25"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset><AbsDimension x="10" y="-176"/></Offset>
+          </Anchor>
+        </Anchors>
+        <Scripts>
+          <OnEscapePressed>
+            this:ClearFocus()
+          </OnEscapePressed>
+        </Scripts>
+      </EditBox>
       <EditBox name="$parentCustomNumberEdit" inherits="InputBoxTemplate" autoFocus="false">
         <Size>
           <AbsDimension x="100" y="25"/>
         </Size>
         <Anchors>
           <Anchor point="TOPLEFT">
-            <Offset><AbsDimension x="10" y="-173"/></Offset>
+            <Offset><AbsDimension x="10" y="-238"/></Offset>
           </Anchor>
         </Anchors>
         <Scripts>

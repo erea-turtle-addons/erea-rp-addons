@@ -2,7 +2,7 @@
 ## Title: E'rea RP Common
 ## Notes: Common Libraries for E'rea RP Addons
 ## Author: Erea
-## Version: 1.0.5
+## Version: 1.0.6
 ## DefaultState: enabled
 
 # Version (generated during build)

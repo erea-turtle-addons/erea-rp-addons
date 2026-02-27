@@ -55,10 +55,12 @@ local function HandleGiveReject(sender, parts)
     Log("GIVE_REJECT from " .. sender .. " for '" .. itemName .. "'")
 end
 
--- CINEMATIC_TRIGGER: parts = [type, cinematicGuid, customText] — sender from arg4
+-- CINEMATIC_TRIGGER: parts = [type, cinematicGuid, customText, additionalText, customNumber] — sender from arg4
 local function HandleCinematicTrigger(sender, parts)
-    local cinematicGuid = parts[2] or ""
-    local customText    = parts[3] or ""
+    local cinematicGuid  = parts[2] or ""
+    local customText     = parts[3] or ""
+    local additionalText = parts[4] or ""
+    local customNumber   = tonumber(parts[5]) or 0
 
     Log("CINEMATIC_TRIGGER from " .. sender .. " cinematicGuid=" .. cinematicGuid)
 
@@ -113,8 +115,8 @@ local function HandleCinematicTrigger(sender, parts)
         end
     end
 
-    -- Broadcast cinematic to all players
-    messaging.SendCinematicBroadcastMessage(cinematicGuid, sender, cinematic.speakerName or "", customText, scriptValues)
+    -- Broadcast cinematic to all players (speakerName is raw template; substitution happens on player side)
+    messaging.SendCinematicBroadcastMessage(cinematicGuid, sender, cinematic.speakerName or "", customText, additionalText, customNumber, scriptValues)
     Log("CINEMATIC_TRIGGER: broadcast sent for " .. cinematicGuid .. " speaker=" .. tostring(cinematic.speakerName))
 end
 
@@ -208,10 +210,11 @@ end
 -- @param customMessage: Optional popup message
 -- @param customText: Optional instance-specific text
 -- @param customNumber: Optional instance-specific number
-function EreaRpMasterEventHandler:GiveItem(targetName, itemGuid, customMessage, customText, customNumber)
+-- @param additionalText: Optional second instance-specific text slot
+function EreaRpMasterEventHandler:GiveItem(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
     Log("GiveItem - target=" .. tostring(targetName) .. " guid=" .. tostring(itemGuid))
 
-    local success = messaging.SendGiveMessage(targetName, itemGuid, customMessage, customText, customNumber)
+    local success = messaging.SendGiveMessage(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
     if success then
         DEFAULT_CHAT_FRAME:AddMessage(
             "|cFF00FF00[RP Master]|r Sent item to " .. targetName,

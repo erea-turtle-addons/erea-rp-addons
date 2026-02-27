@@ -25,6 +25,7 @@
 -- ============================================================================
 local inventory = EreaRpLibraries:Inventory()
 local messaging = EreaRpLibraries:Messaging()
+local objectDatabase = EreaRpLibraries:ObjectDatabase()
 local Log = EreaRpLibraries:Logging("RPPlayer")
 
 -- ============================================================================
@@ -218,11 +219,15 @@ function EreaRpPlayerInventory:RefreshBag()
                 GameTooltip:SetOwner(UIParent, "ANCHOR_NONE")
                 GameTooltip:ClearLines()
 
-                -- Object name always in white
-                GameTooltip:AddLine(currentItem.name, 1, 1, 1)  -- White
+                -- Object name always in white (apply placeholder substitution)
+                GameTooltip:AddLine(
+                    objectDatabase.ApplyItemPlaceholders(currentItem.name, currentItem.customText, currentItem.additionalText, currentItem.customNumber),
+                    1, 1, 1)
 
                 if currentItem.tooltip and currentItem.tooltip ~= "" then
-                    GameTooltip:AddLine(currentItem.tooltip, 1, 0.82, 0, 1)
+                    GameTooltip:AddLine(
+                        objectDatabase.ApplyItemPlaceholders(currentItem.tooltip, currentItem.customText, currentItem.additionalText, currentItem.customNumber),
+                        1, 0.82, 0, 1)
                 end
 
                 -- Show "Actions available" only if item has available actions (after condition checks)

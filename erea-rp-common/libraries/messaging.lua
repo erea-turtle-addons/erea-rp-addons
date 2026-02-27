@@ -159,12 +159,14 @@ end
 -- @param customMessage: Optional custom message shown in popup
 -- @param customText: Optional instance-specific text (v0.1.1)
 -- @param customNumber: Optional instance-specific number (v0.1.1)
+-- @param additionalText: Optional second instance-specific text slot (v0.2.2)
 -- @returns: Message string
 --
--- FORMAT v0.1.1: "GIVE^playerName^itemGuid^customMessage^customText^customNumber"
--- EXAMPLE: "GIVE^Malganis^1735056789-12345-a3f2^You found this item!^Sealed by magic^3"
+-- FORMAT v0.2.2: "GIVE^playerName^itemGuid^customMessage^customText^customNumber^additionalText"
+-- EXAMPLE: "GIVE^Malganis^1735056789-12345-a3f2^You found this item!^Sealed by magic^3^Beta"
+-- Old clients (6 fields) safely ignore field 7; new clients default field 7 to "".
 -- ============================================================================
-local function CreateGiveMessage(targetName, itemGuid, customMessage, customText, customNumber)
+local function CreateGiveMessage(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
     if not targetName or not itemGuid then
         return nil
     end
@@ -172,7 +174,8 @@ local function CreateGiveMessage(targetName, itemGuid, customMessage, customText
     local msg = customMessage or ""
     local cText = customText or ""
     local cNum = tostring(customNumber or 0)
-    return MESSAGE_TYPES.GIVE .. MESSAGE_DELIMITER .. targetName .. MESSAGE_DELIMITER .. itemGuid .. MESSAGE_DELIMITER .. msg .. MESSAGE_DELIMITER .. cText .. MESSAGE_DELIMITER .. cNum
+    local aText = additionalText or ""
+    return MESSAGE_TYPES.GIVE .. MESSAGE_DELIMITER .. targetName .. MESSAGE_DELIMITER .. itemGuid .. MESSAGE_DELIMITER .. msg .. MESSAGE_DELIMITER .. cText .. MESSAGE_DELIMITER .. cNum .. MESSAGE_DELIMITER .. aText
 end
 
 -- ============================================================================
@@ -339,8 +342,8 @@ end
 --   - TRADE_ACCEPT^targetName^itemName (Base64)
 --   - TRADE_REJECT^targetName^itemName (Base64)
 --   - SHOW_REJECT^targetName^itemName (Base64)
---   - CINEMATIC_TRIGGER^cinematicGuid^customText
---   - CINEMATIC^cinematicGuid^senderName^speakerName^customText
+--   - CINEMATIC_TRIGGER^cinematicGuid^customText^additionalText^customNumber
+--   - CINEMATIC^cinematicGuid^senderName^speakerName^customText^additionalText^customNumber^[sv1]^...
 --   - MERGE_TRIGGER^mergeGroupId^objectGuid^customNumber
 --   - DB_SYNC_START^messageId^databaseId^databaseName^version^checksum^totalSize
 --   - DB_SYNC_CHUNK^messageId^chunkIndex^totalChunks^chunkData
@@ -389,8 +392,8 @@ end
 -- These functions encapsulate the entire messaging flow so client code
 -- only needs to call one function without touching SendAddonMessage directly
 
-local function SendGiveMessage(targetName, itemGuid, customMessage, customText, customNumber)
-    local message = CreateGiveMessage(targetName, itemGuid, customMessage, customText, customNumber)
+local function SendGiveMessage(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
+    local message = CreateGiveMessage(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
     if not message then return false end
 
     local distribution = GetDistribution(targetName)
@@ -480,18 +483,22 @@ end
 -- ============================================================================
 -- @param cinematicGuid: GUID of the cinematic in the library
 -- @param customText: Instance-specific custom text from the item
+-- @param additionalText: Instance-specific additional text from the item
+-- @param customNumber: Instance-specific number from the item
 -- @returns: success boolean
 --
--- FORMAT: "CINEMATIC_TRIGGER^cinematicGuid^customText"
+-- FORMAT: "CINEMATIC_TRIGGER^cinematicGuid^customText^additionalText^customNumber"
 -- ============================================================================
-local function SendCinematicTriggerMessage(cinematicGuid, customText)
+local function SendCinematicTriggerMessage(cinematicGuid, customText, additionalText, customNumber)
     if not cinematicGuid or cinematicGuid == "" then
         return false
     end
 
     local message = MESSAGE_TYPES.CINEMATIC_TRIGGER .. MESSAGE_DELIMITER ..
                    cinematicGuid .. MESSAGE_DELIMITER ..
-                   (customText or "")
+                   (customText or "") .. MESSAGE_DELIMITER ..
+                   (additionalText or "") .. MESSAGE_DELIMITER ..
+                   tostring(customNumber or 0)
 
     local distribution = GetDistribution()
     SendAddonMessage(ADDON_PREFIX, message, distribution)
@@ -503,13 +510,16 @@ end
 -- ============================================================================
 -- @param cinematicGuid: GUID for player-side library lookup
 -- @param senderName: Player(s) who triggered the cinematic (comma-separated for merges)
--- @param speakerName: Name displayed as the speaker
+-- @param speakerName: Name displayed as the speaker (raw template, substituted on player side)
 -- @param customText: Instance-specific custom text
+-- @param additionalText: Instance-specific additional text
+-- @param customNumber: Instance-specific number
+-- @param scriptValues: Array of pre-resolved script values
 -- @returns: success boolean
 --
--- FORMAT: "CINEMATIC^cinematicGuid^senderName^speakerName^customText"
+-- FORMAT: "CINEMATIC^cinematicGuid^senderName^speakerName^customText^additionalText^customNumber^[sv1]^..."
 -- ============================================================================
-local function SendCinematicBroadcastMessage(cinematicGuid, senderName, speakerName, customText, scriptValues)
+local function SendCinematicBroadcastMessage(cinematicGuid, senderName, speakerName, customText, additionalText, customNumber, scriptValues)
     if not cinematicGuid or not senderName or not speakerName then
         return false
     end
@@ -518,9 +528,11 @@ local function SendCinematicBroadcastMessage(cinematicGuid, senderName, speakerN
                    cinematicGuid .. MESSAGE_DELIMITER ..
                    senderName .. MESSAGE_DELIMITER ..
                    speakerName .. MESSAGE_DELIMITER ..
-                   (customText or "")
+                   (customText or "") .. MESSAGE_DELIMITER ..
+                   (additionalText or "") .. MESSAGE_DELIMITER ..
+                   tostring(customNumber or 0)
 
-    -- Append script values as additional fields
+    -- Append script values as additional fields (parts[8+])
     if scriptValues then
         for _, value in ipairs(scriptValues) do
             message = message .. MESSAGE_DELIMITER .. (value or "")

@@ -230,12 +230,13 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             end
 
         elseif messageType == messaging.MESSAGE_TYPES.GIVE then
-            -- FORMAT v0.1.1: GIVE^targetName^itemGuid^customMessage^customText^customNumber
+            -- FORMAT v0.2.2: GIVE^targetName^itemGuid^customMessage^customText^customNumber^additionalText
             local targetName = parts[2]
             local itemGuid = parts[3]
             local customMessage = parts[4] or "A Game Master wants to give you an item."
             local customText = parts[5] or ""
             local customNumber = tonumber(parts[6]) or 0
+            local additionalText = parts[7] or ""   -- NEW (v0.2.2): old senders omit this field
             local myName = UnitName("player")
 
             Log("GIVE - Target: " .. tostring(targetName) .. ", GUID: " .. tostring(itemGuid) .. ", MyName: " .. tostring(myName))
@@ -277,8 +278,8 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 return
             end
 
-            -- v0.2.1: Create instance data only (minimal storage)
-            local instance = inventory.CreateItemInstance(itemGuid, customText, customNumber)
+            -- v0.2.2: Create instance data only (minimal storage)
+            local instance = inventory.CreateItemInstance(itemGuid, customText, additionalText, customNumber)
 
             -- Store instance + object reference for popup
             EreaRpPlayer_PendingGiveItem = instance
@@ -332,8 +333,8 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 return
             end
 
-            -- v0.2.1: Create instance data only (minimal storage)
-            local instance = inventory.CreateItemInstance(objectGuid, customText, customNumber)
+            -- v0.2.1: Create instance data only (minimal storage); TRADE has no additionalText
+            local instance = inventory.CreateItemInstance(objectGuid, customText, "", customNumber)
 
             Log("TRADE complete - Item: " .. tostring(objectDef.name) .. " from " .. sender)
 
@@ -507,16 +508,18 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             EreaRpPlayer_PendingOutgoingTrade = nil
 
         elseif messageType == messaging.MESSAGE_TYPES.CINEMATIC then
-            -- Format: CINEMATIC^cinematicGuid^senderName^speakerName^customText^[scriptValue1]^...
+            -- Format: CINEMATIC^cinematicGuid^senderName^speakerName^customText^additionalText^customNumber^[sv1]^...
             -- senderName may be comma-separated for merge cinematics (e.g. "PlayerA,PlayerB")
-            local cinematicGuid = parts[2] or ""
-            local senderName    = parts[3] or sender
-            local speakerName   = parts[4] or ""
-            local customText    = parts[5] or ""
-            
-            -- Extract script values (all parts after index 5)
+            local cinematicGuid  = parts[2] or ""
+            local senderName     = parts[3] or sender
+            local speakerName    = parts[4] or ""
+            local customText     = parts[5] or ""
+            local additionalText = parts[6] or ""
+            local customNumber   = tonumber(parts[7]) or 0
+
+            -- Extract script values (all parts after index 7)
             local scriptValues = {}
-            for i = 6, table.getn(parts) do
+            for i = 8, table.getn(parts) do
                 table.insert(scriptValues, parts[i])
             end
 
@@ -549,6 +552,8 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 if cinematic then
                     -- Resolve placeholders in message template
                     dialogueText = cinematic.messageTemplate or ""
+                    -- Apply item placeholders first ({custom-text}, {additional-text}, {item-counter}, {player-name})
+                    dialogueText = objectDatabase.ApplyItemPlaceholders(dialogueText, customText, additionalText, customNumber, senderName)
                     dialogueText = string.gsub(dialogueText, "{playerName}", senderName)
                     dialogueText = string.gsub(dialogueText, "{customText}", customText)
                     
@@ -642,7 +647,9 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                     Log("CINEMATIC: legacy format, anim=" .. tostring(animKey))
                 end
 
-                EreaRpCinematicFrame:ShowDialogue(senderName, speakerName, dialogueText, leftConfig, rightConfig)
+                -- Resolve item placeholders in speakerName (template may contain {custom-text}, {player-name} etc.)
+                local resolvedSpeaker = objectDatabase.ApplyItemPlaceholders(speakerName, customText, additionalText, customNumber, senderName)
+                EreaRpCinematicFrame:ShowDialogue(senderName, resolvedSpeaker, dialogueText, leftConfig, rightConfig)
             end
 
         elseif messageType == messaging.MESSAGE_TYPES.STATUS_REQUEST then
@@ -817,7 +824,7 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
         local systemDbInventory = EreaRpPlayerDB.inventories["system-welcome-db"] or {}
         if table.getn(systemDbInventory) == 0 then
             Log("system-welcome-db inventory is empty, adding system-welcome-0")
-            local welcomeItem = inventory.CreateItemInstance("system-welcome-0", "", 0)
+            local welcomeItem = inventory.CreateItemInstance("system-welcome-0", "", "", 0)
             table.insert(systemDbInventory, welcomeItem)
             EreaRpPlayerDB.inventories["system-welcome-db"] = systemDbInventory
             if EreaRpPlayerDB.activeDatabaseId == "system-welcome-db" then

@@ -35,6 +35,7 @@ function EreaRpMasterCreateEditor.Create(parent, params, methodIndex)
 
     -- Get child references
     local customTextEdit = _G[frame:GetName() .. "CustomTextEdit"]
+    local additionalTextEdit = _G[frame:GetName() .. "AdditionalTextEdit"]
     local customNumberEdit = _G[frame:GetName() .. "CustomNumberEdit"]
 
     -- Initialize object dropdown (UIDropDownMenuTemplate needs unique global name)
@@ -70,6 +71,7 @@ function EreaRpMasterCreateEditor.Create(parent, params, methodIndex)
         return {
             objectGuid = UIDropDownMenu_GetSelectedValue(objectDropdown) or "",
             customText = customTextEdit:GetText() or "",
+            additionalText = additionalTextEdit:GetText() or "",
             customNumber = customNumberEdit:GetText() or ""
         }
     end
@@ -94,6 +96,9 @@ function EreaRpMasterCreateEditor.Create(parent, params, methodIndex)
         if p.customText then
             customTextEdit:SetText(p.customText)
         end
+
+        -- Set additional text
+        additionalTextEdit:SetText(p.additionalText or "")
 
         -- Set custom number
         if p.customNumber then

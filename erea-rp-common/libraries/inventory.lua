@@ -191,6 +191,7 @@ end
 -- ============================================================================
 -- @param guid: Object GUID
 -- @param customText: Instance-specific text (default "")
+-- @param additionalText: Second instance-specific text slot (default "")
 -- @param customNumber: Instance-specific number (default 0)
 -- @param slot: Slot index (optional, auto-assigned if nil)
 -- @returns: Item instance table
@@ -198,10 +199,11 @@ end
 -- PURPOSE: Store only instance-specific data in inventory
 -- Object definition (name, icon, content, actions) stored separately in syncedDatabase
 -- ============================================================================
-local function CreateItemInstance(guid, customText, customNumber, slot)
+local function CreateItemInstance(guid, customText, additionalText, customNumber, slot)
     return {
         guid = guid,
         customText = customText or "",
+        additionalText = additionalText or "",
         customNumber = customNumber or 0,
         slot = slot
     }
@@ -248,6 +250,7 @@ local function GetFullItem(instance, syncedDatabase)
         contentTemplate = objectDef.contentTemplate,
         actions = objectDef.actions,  -- Shared reference (read-only)
         customText = instance.customText,
+        additionalText = instance.additionalText,
         customNumber = instance.customNumber,
         slot = instance.slot
     }

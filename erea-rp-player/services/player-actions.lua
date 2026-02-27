@@ -165,6 +165,7 @@ end
 local function HandleCreateObject(item, action, result)
     local objectGuid = result.data.objectGuid
     local customText = result.data.customText or ""
+    local additionalText = result.data.additionalText or ""
     local customNumber = tonumber(result.data.customNumber) or 0
 
     -- Look up object definition from active database
@@ -193,8 +194,8 @@ local function HandleCreateObject(item, action, result)
         return
     end
 
-    -- Create instance (minimal data: guid, customText, customNumber)
-    local instance = inventoryModule.CreateItemInstance(objectGuid, customText, customNumber)
+    -- Create instance (minimal data: guid, customText, additionalText, customNumber)
+    local instance = inventoryModule.CreateItemInstance(objectGuid, customText, additionalText, customNumber)
 
     -- Add to inventory (auto-assigns slot)
     local success, assignedSlot = inventoryModule.AddItemToInventory(EreaRpPlayerDB.inventory, instance)

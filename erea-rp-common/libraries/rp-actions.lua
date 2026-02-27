@@ -22,6 +22,7 @@
 
 -- Import dependencies
 local messaging = EreaRpLibraries:Messaging()
+local objectDatabase = EreaRpLibraries:ObjectDatabase()
 local Log = EreaRpLibraries:Logging("RPActions")
 
 -- ============================================================================
@@ -79,15 +80,23 @@ local METHOD_REGISTRY = {
             {
                 key = "customText",
                 type = "text_with_placeholder",
-                label = "Initial custom text (optional)",
+                label = "Custom text for new object",
                 required = false,
-                placeholder = "{customText}"
+                placeholder = "{custom-text}"
+            },
+            {
+                key = "additionalText",
+                type = "text_with_placeholder",
+                label = "Additional text for new object",
+                required = false,
+                placeholder = "{additional-text}"
             },
             {
                 key = "customNumber",
                 type = "number",
-                label = "Initial custom number (optional)",
-                required = false
+                label = "Counter for new object",
+                required = false,
+                placeholder = "{item-counter}"
             }
         },
         execute = function(playerName, item, params)
@@ -99,9 +108,13 @@ local METHOD_REGISTRY = {
                 }
             end
 
-            -- Resolve {customText} placeholder from source item
-            local customText = params.customText or ""
-            customText = string.gsub(customText, "{customText}", item.customText or "")
+            -- Resolve {custom-text}, {additional-text}, {item-counter}, {player-name} placeholders from source item
+            local customText    = objectDatabase.ApplyItemPlaceholders(params.customText    or "", item.customText, item.additionalText, item.customNumber, playerName)
+            local additionalText = objectDatabase.ApplyItemPlaceholders(params.additionalText or "", item.customText, item.additionalText, item.customNumber, playerName)
+
+            -- customNumber param may contain {item-counter} — resolve then convert to number
+            local customNumberStr = objectDatabase.ApplyItemPlaceholders(tostring(params.customNumber or ""), item.customText, item.additionalText, item.customNumber, playerName)
+            local customNumber = tonumber(customNumberStr) or 0
 
             return {
                 result = RESULT_TYPES.CREATE_OBJECT,
@@ -109,7 +122,8 @@ local METHOD_REGISTRY = {
                 data = {
                     objectGuid = params.objectGuid,
                     customText = customText,
-                    customNumber = tonumber(params.customNumber) or 0
+                    additionalText = additionalText,
+                    customNumber = customNumber
                 }
             }
         end
@@ -204,7 +218,12 @@ local METHOD_REGISTRY = {
             end
 
             -- Send trigger to GM; GM will look up cinematic and broadcast
-            messaging.SendCinematicTriggerMessage(params.cinematicId, item.customText or "")
+            messaging.SendCinematicTriggerMessage(
+                params.cinematicId,
+                item.customText    or "",
+                item.additionalText or "",
+                item.customNumber  or 0
+            )
 
             return {
                 result = RESULT_TYPES.SUCCESS,

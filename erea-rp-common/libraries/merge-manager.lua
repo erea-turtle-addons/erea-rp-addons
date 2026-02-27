@@ -158,7 +158,7 @@ local function ExecuteMerge(mergeGroup)
 
     -- Send merged CINEMATIC broadcast (mergeGroup serves as cinematicGuid for player-side lookup)
     Log("ExecuteMerge: sending merged CINEMATIC broadcast now")
-    messaging.SendCinematicBroadcastMessage(mergeGroup, combinedSenders, speakerName, mergedText, scriptValues)
+    messaging.SendCinematicBroadcastMessage(mergeGroup, combinedSenders, speakerName, mergedText, "", 0, scriptValues)
     Log("ExecuteMerge: merged CINEMATIC broadcast sent")
 
     -- Clear buffer for this group

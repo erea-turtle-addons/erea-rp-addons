@@ -1237,15 +1237,37 @@ local function ReceiveTransmission(serializedData)
 end
 
 -- ============================================================================
+-- ApplyItemPlaceholders - Substitute all instance placeholders in any string
+-- ============================================================================
+-- @param text: String - Template text containing placeholders (may be nil or "")
+-- @param customText: String - Value for {custom-text}
+-- @param additionalText: String - Value for {additional-text}
+-- @param customNumber: Number - Value for {item-counter}
+-- @param playerName: String - Value for {player-name} (optional; falls back to UnitName("player"))
+-- @return String - Text with all placeholders substituted
+-- NOTE: Lua 5.0: hyphens in gsub patterns must be escaped as %-
+-- ============================================================================
+local function ApplyItemPlaceholders(text, customText, additionalText, customNumber, playerName)
+    if not text or text == "" then return text or "" end
+    text = string.gsub(text, "{custom%-text}",     customText                        or "")
+    text = string.gsub(text, "{additional%-text}", additionalText                    or "")
+    text = string.gsub(text, "{item%-counter}",    tostring(customNumber             or 0))
+    text = string.gsub(text, "{player%-name}",     playerName or UnitName("player")  or "")
+    return text
+end
+
+-- ============================================================================
 -- RenderItemContent - Render item content with custom text substitution
 -- ============================================================================
 -- PURPOSE: Pure business logic for rendering item content (NO GUI code)
 -- @param guid: String - Object GUID to look up in database
--- @param customText: String - Custom text to substitute (may be nil or "")
+-- @param customText: String - Custom text to substitute for {custom-text} (may be nil or "")
+-- @param additionalText: String - Text for {additional-text} placeholder (may be nil or "")
+-- @param customNumber: Number - Value for {item-counter} placeholder (may be nil or 0)
 -- @param database: Table - Database to look up object definition
 -- @return String - Rendered content ready for display
 -- ============================================================================
-local function RenderItemContent(guid, customText, database)
+local function RenderItemContent(guid, customText, additionalText, customNumber, database)
     if not guid or not database or not database.items then
         return "This item has no content to read."
     end
@@ -1266,18 +1288,18 @@ local function RenderItemContent(guid, customText, database)
     -- Apply template substitution logic
     local displayContent = ""
 
-    if customText and customText ~= "" then
-        -- If customText is set, use contentTemplate with substitution
-        if objectDef.contentTemplate and objectDef.contentTemplate ~= "" then
-            -- Replace {custom-text} placeholder with actual customText
-            displayContent = string.gsub(objectDef.contentTemplate, "{custom%-text}", customText)
-        else
-            -- No template defined, just show customText
-            displayContent = customText
-        end
+    local hasCustomText = customText and customText ~= ""
+    local hasAdditional = additionalText and additionalText ~= ""
+
+    if (hasCustomText or hasAdditional) and objectDef.contentTemplate and objectDef.contentTemplate ~= "" then
+        -- At least one text field set and template exists: substitute all placeholders
+        displayContent = ApplyItemPlaceholders(objectDef.contentTemplate, customText, additionalText, customNumber)
+    elseif hasCustomText then
+        -- No template, fall back to showing customText directly
+        displayContent = customText
     else
-        -- No customText, use default content
-        displayContent = objectDef.content or ""
+        -- No custom text fields set, use default content (still apply placeholders)
+        displayContent = ApplyItemPlaceholders(objectDef.content or "", customText, additionalText, customNumber)
     end
 
     if displayContent == "" then
@@ -1440,6 +1462,7 @@ function EreaRpLibraries:ObjectDatabase()
         UnescapeString = UnescapeString,
 
         -- Content rendering (business logic)
+        ApplyItemPlaceholders = ApplyItemPlaceholders,
         RenderItemContent = RenderItemContent,
 
         -- Item CRUD operations (for item library management)
