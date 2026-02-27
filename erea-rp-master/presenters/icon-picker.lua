@@ -40,6 +40,9 @@ function EreaRpMasterIconPickerFrame:Initialize()
     self.closeButton = EreaRpMasterIconPickerFrameCloseButton
     self.filterEditBox = EreaRpMasterIconPickerFrameFilterEditBox
     self.scrollFrame = EreaRpMasterIconPickerScrollFrame
+    self.wowheadEditBox = EreaRpMasterIconPickerFrameWoWHeadEditBox
+    self.wowheadPreview = EreaRpMasterIconPickerFrameWoWHeadPreview
+    self.wowheadUseButton = EreaRpMasterIconPickerFrameWoWHeadUseButton
 
     -- State
     self.filteredIcons = {}
@@ -71,6 +74,76 @@ function EreaRpMasterIconPickerFrame:Initialize()
         FauxScrollFrame_OnVerticalScroll(ICON_ROW_HEIGHT, function()
             EreaRpMasterIconPickerFrame:UpdateGrid()
         end)
+    end)
+
+    -- WoWHead preview: slot background + icon texture
+    local wowheadBg = self.wowheadPreview:CreateTexture(
+        "EreaRpMasterIconPickerFrameWoWHeadPreviewBg", "BACKGROUND")
+    wowheadBg:SetTexture("Interface\\Buttons\\UI-Quickslot2")
+    wowheadBg:SetWidth(46)
+    wowheadBg:SetHeight(46)
+    wowheadBg:SetPoint("CENTER", self.wowheadPreview, "CENTER", 0, 0)
+    local wowheadTex = self.wowheadPreview:CreateTexture(
+        "EreaRpMasterIconPickerFrameWoWHeadPreviewIcon", "ARTWORK")
+    wowheadTex:SetWidth(36)
+    wowheadTex:SetHeight(36)
+    wowheadTex:SetPoint("CENTER", self.wowheadPreview, "CENTER", 0, 0)
+    self.wowheadPreview.iconTexture = wowheadTex
+
+    -- WoWHead EditBox: tooltip
+    self.wowheadEditBox:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Paste an icon name from wowhead.com/classic/icons\n(e.g. ability_impalingbolt)", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    self.wowheadEditBox:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    -- WoWHead EditBox: live preview on text change
+    self.wowheadEditBox:SetScript("OnTextChanged", function()
+        local text = string.gsub(this:GetText(), "^%s*(.-)%s*$", "%1")  -- trim
+        if text ~= "" then
+            local previewPath = "Interface\\Icons\\" .. text
+            -- Clear first: SetTexture silently fails on invalid paths, leaving the old icon
+            EreaRpMasterIconPickerFrame.wowheadPreview.iconTexture:SetTexture("")
+            EreaRpMasterIconPickerFrame.wowheadPreview.iconTexture:SetTexture(previewPath)
+            EreaRpMasterIconPickerFrame.wowheadPreview:Show()
+        else
+            EreaRpMasterIconPickerFrame.wowheadPreview:Hide()
+        end
+    end)
+
+    -- WoWHead Use button: select icon by name
+    self.wowheadUseButton:SetScript("OnClick", function()
+        local text = string.gsub(
+            EreaRpMasterIconPickerFrameWoWHeadEditBox:GetText(),
+            "^%s*(.-)%s*$", "%1")
+        if text == "" then return end
+
+        -- Try case-insensitive lookup in icon list for canonical path
+        local iconPath = nil
+        local lower = string.lower(text)
+        local allIcons = EreaRpMaster_GetIconList()
+        for i = 1, table.getn(allIcons) do  -- Lua 5.0: no # operator
+            local entry = allIcons[i]
+            local lastSlash = string.find(entry, "\\[^\\]*$")
+            local filename = lastSlash and string.sub(entry, lastSlash + 1) or entry
+            if string.lower(filename) == lower then
+                iconPath = entry  -- use canonical casing from list
+                break
+            end
+        end
+
+        -- Fall back to inferred path (MPQ is case-insensitive on WoW)
+        if not iconPath then
+            iconPath = "Interface\\Icons\\" .. text
+        end
+
+        if EreaRpMasterIconPickerFrame.onSelectCallback then
+            EreaRpMasterIconPickerFrame.onSelectCallback(iconPath)
+        end
+        EreaRpMasterIconPickerFrame:Hide()
     end)
 
     -- Create fixed pool of icon buttons
@@ -151,6 +224,8 @@ function EreaRpMasterIconPickerFrame:Open(currentIcon, onSelectCallback)
 
     self.onSelectCallback = onSelectCallback
     self.filterEditBox:SetText("")
+    self.wowheadEditBox:SetText("")
+    self.wowheadPreview:Hide()
     self:FilterIcons()
     self:UpdateGrid()
     self:Show()

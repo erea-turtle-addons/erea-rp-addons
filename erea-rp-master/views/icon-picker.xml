@@ -3,7 +3,7 @@
   <!-- Icon Picker Dialog -->
   <Frame name="EreaRpMasterIconPickerFrame" parent="UIParent" frameStrata="FULLSCREEN_DIALOG" toplevel="true" enableMouse="true" movable="true" hidden="true">
     <Size>
-      <AbsDimension x="480" y="600"/>
+      <AbsDimension x="480" y="640"/>
     </Size>
     <Anchors>
       <Anchor point="CENTER"/>
@@ -41,6 +41,17 @@
             <Anchor point="TOPLEFT">
               <Offset>
                 <AbsDimension x="20" y="-52"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+
+        <!-- WoWHead Name label -->
+        <FontString name="$parentWoWHeadLabel" inherits="GameFontNormal" text="WoWHead:">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset>
+                <AbsDimension x="20" y="-86"/>
               </Offset>
             </Anchor>
           </Anchors>
@@ -123,6 +134,78 @@
         </Scripts>
       </EditBox>
 
+      <!-- WoWHead Name EditBox -->
+      <EditBox name="$parentWoWHeadEditBox" autoFocus="false">
+        <Size>
+          <AbsDimension x="240" y="24"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="100" y="-82"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="BACKGROUND">
+            <FontString inherits="ChatFontNormal" setAllPoints="true"/>
+          </Layer>
+        </Layers>
+        <FontString inherits="ChatFontNormal"/>
+        <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground"
+                  edgeFile="Interface\Tooltips\UI-Tooltip-Border"
+                  tile="true">
+          <EdgeSize>
+            <AbsValue val="10"/>
+          </EdgeSize>
+          <TileSize>
+            <AbsValue val="16"/>
+          </TileSize>
+          <BackgroundInsets>
+            <AbsInset left="3" right="3" top="3" bottom="3"/>
+          </BackgroundInsets>
+        </Backdrop>
+        <Scripts>
+          <OnLoad>
+            this:SetBackdropColor(0.1, 0.1, 0.1, 1)
+            this:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+            this:SetTextInsets(5, 5, 0, 0)
+            this:SetMaxLetters(100)
+          </OnLoad>
+          <OnEscapePressed>
+            this:ClearFocus()
+          </OnEscapePressed>
+        </Scripts>
+      </EditBox>
+
+      <!-- WoWHead Preview Icon -->
+      <Button name="$parentWoWHeadPreview" hidden="true">
+        <Size>
+          <AbsDimension x="36" y="36"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="345" y="-80"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </Button>
+
+      <!-- WoWHead Use Button -->
+      <Button name="$parentWoWHeadUseButton" inherits="UIPanelButtonTemplate" text="Use">
+        <Size>
+          <AbsDimension x="50" y="24"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="387" y="-82"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </Button>
+
       <!-- FauxScrollFrame for icon grid -->
       <ScrollFrame name="EreaRpMasterIconPickerScrollFrame" inherits="FauxScrollFrameTemplate">
         <Size>
@@ -131,7 +214,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="20" y="-80"/>
+              <AbsDimension x="20" y="-115"/>
             </Offset>
           </Anchor>
         </Anchors>

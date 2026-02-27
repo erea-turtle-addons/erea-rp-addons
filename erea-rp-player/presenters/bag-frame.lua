@@ -32,10 +32,9 @@ function EreaRpPlayerBagFrame:Initialize()
     -- Hide the static FontString label; a dropdown replaces it visually
     EreaRpPlayerBagFrameDbLabel:Hide()
 
-    -- Create database-selector dropdown
-    local dd = CreateFrame("Frame", "EreaRpPlayerBagFrameDbDropdown", self, "UIDropDownMenuTemplate")
-    dd:SetPoint("TOP", self, "TOP", -5, -36)
-    UIDropDownMenu_SetWidth(160, dd)
+    -- Database-selector dropdown (declared in bag-frame.xml)
+    local dd = EreaRpPlayerBagFrameDbDropdown
+    UIDropDownMenu_SetWidth(171, dd)  -- 200 + 25 internal = 225px total (5px from each side border)
     self.dbDropdown = dd
 
     UIDropDownMenu_Initialize(dd, function()
