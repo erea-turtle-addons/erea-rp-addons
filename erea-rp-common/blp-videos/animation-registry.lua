@@ -49,8 +49,16 @@ EreaRpAnimationRegistry = {
         texture = "Interface\\AddOns\\erea-rp-common\\blp-videos\\Lit_candle",
         cols = 4, rows = 4, totalFrames = 16, fps = 8
     },
+    moonstone_compass = {
+        texture = "Interface\\AddOns\\erea-rp-common\\blp-videos\\Moonstone_compass",
+        cols = 4, rows = 4, totalFrames = 16, fps = 8
+    },
     pie_splat = {
         texture = "Interface\\AddOns\\erea-rp-common\\blp-videos\\Pie_splat",
+        cols = 4, rows = 4, totalFrames = 16, fps = 8
+    },
+    sunfire_beacon = {
+        texture = "Interface\\AddOns\\erea-rp-common\\blp-videos\\Sunfire_beacon",
         cols = 4, rows = 4, totalFrames = 16, fps = 8
     },
     water_droplet = {
