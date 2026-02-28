@@ -237,8 +237,7 @@ function EreaRpMasterScriptLibrary:RequestExecution(playerName, scriptName)
 
     local script = self:GetScript(scriptName)
     if not script then
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF0000[RP Master]|r Script not found: " .. scriptName, 1, 0, 0)
+        Log("RequestExecution: script not found: " .. scriptName)
         return nil
     end
 
@@ -258,8 +257,7 @@ function EreaRpMasterScriptLibrary:RequestExecution(playerName, scriptName)
         Log("Script request sent: " .. scriptName .. " -> " .. playerName .. " (reqId: " .. requestId .. ")")
     else
         self._pendingRequests[requestId] = nil
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF0000[RP Master]|r Failed to send script request", 1, 0, 0)
+        Log("RequestExecution: failed to send script request")
         return nil
     end
 
@@ -280,12 +278,7 @@ function EreaRpMasterScriptLibrary:HandleScriptResult(requestId, result, sender)
         return
     end
 
-    -- Display result in chat
-    DEFAULT_CHAT_FRAME:AddMessage(
-        "|cFF00FF00[RP Master]|r Script '" .. pending.scriptName .. "' from " ..
-        sender .. ": " .. tostring(result), 0, 1, 0)
-
-    Log("SCRIPT_RESULT from " .. sender .. " reqId=" .. requestId .. " result=" .. tostring(result))
+    Log("SCRIPT_RESULT from " .. sender .. " reqId=" .. requestId .. " script=" .. pending.scriptName .. " result=" .. tostring(result))
 
     -- Clear pending request
     self._pendingRequests[requestId] = nil

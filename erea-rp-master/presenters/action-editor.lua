@@ -92,14 +92,12 @@ local function CreateMethodFrame(parent, currentMethods, methodIndex)
     local methodDef = rpActions.GetMethodRegistry()[method.type]
 
     if not methodDef then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Unknown method type: " .. tostring(method.type), 1, 0, 0)
         return nil
     end
 
     -- Look up the editor module for this method type
     local editorModule = EDITOR_MAP[method.type]
     if not editorModule then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r No editor for method type: " .. tostring(method.type), 1, 0, 0)
         return nil
     end
 
@@ -463,9 +461,6 @@ function EreaRpMasterActionEditorFrame:Save()
         local action = self.actions[i]
         local valid, errorMsg = rpActions.ValidateAction(action)
         if not valid then
-            DEFAULT_CHAT_FRAME:AddMessage(
-                "|cFFFF0000[RP Master]|r Action '" .. (action.label or "#" .. i) .. "': " .. errorMsg, 1, 0, 0
-            )
             return
         end
     end

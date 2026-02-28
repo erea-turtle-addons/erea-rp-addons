@@ -240,9 +240,6 @@ function EreaRpMasterIconPickerFrame:ResetPositions()
     -- Reset icon picker window position
     self:ClearAllPoints()
     self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-    
-    -- Show confirmation message
-    DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Master]|r Icon picker position reset to default", 0, 1, 0)
 end
 
 -- ============================================================================

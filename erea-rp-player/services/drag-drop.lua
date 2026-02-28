@@ -130,7 +130,6 @@ function RPPlayerDragDrop:StopDrag(targetSlot)
             end
 
             if not targetInGroup then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF9900[RP Player]|r You can only trade with people in your group", 1, 0.6, 0)
                 draggedItem = nil
                 dragSourceSlot = nil
                 return

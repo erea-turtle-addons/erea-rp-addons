@@ -482,8 +482,7 @@ local function SanitizeItemLibrary(itemLibrary)
                             table.insert(cleanedMethods, method)
                         elseif method and method.type then
                             result.methodsRemoved = result.methodsRemoved + 1
-                            DEFAULT_CHAT_FRAME:AddMessage(
-                                "|cFFFF8C00[RP Cleanup]|r Removed obsolete method '" ..
+                            Log("SanitizeItemLibrary: removed obsolete method '" ..
                                 tostring(method.type) .. "' from action '" ..
                                 tostring(action.label or action.id) .. "' on item '" ..
                                 tostring(item.name or itemId) .. "'"
@@ -497,8 +496,7 @@ local function SanitizeItemLibrary(itemLibrary)
                         table.insert(cleanedActions, action)
                     else
                         result.actionsRemoved = result.actionsRemoved + 1
-                        DEFAULT_CHAT_FRAME:AddMessage(
-                            "|cFFFF8C00[RP Cleanup]|r Removed empty action '" ..
+                        Log("SanitizeItemLibrary: removed empty action '" ..
                             tostring(action.label or action.id) .. "' from item '" ..
                             tostring(item.name or itemId) .. "' (no valid methods remaining)"
                         )

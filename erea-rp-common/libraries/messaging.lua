@@ -511,29 +511,30 @@ end
 -- ============================================================================
 -- @param cinematicGuid: GUID for player-side library lookup
 -- @param senderName: Player(s) who triggered the cinematic (comma-separated for merges)
--- @param speakerName: Name displayed as the speaker (raw template, substituted on player side)
 -- @param customText: Instance-specific custom text
 -- @param additionalText: Instance-specific additional text
 -- @param customNumber: Instance-specific number
 -- @param scriptValues: Array of pre-resolved script values
 -- @returns: success boolean
 --
--- FORMAT: "CINEMATIC^cinematicGuid^senderName^speakerName^customText^additionalText^customNumber^[sv1]^..."
+-- FORMAT: "CINEMATIC^cinematicGuid^senderName^customText^additionalText^customNumber^[sv1]^..."
+-- speakerName is looked up from cinematicLibrary on the player side (not sent on wire)
+-- Fields: parts[2]=cinematicGuid, parts[3]=senderName, parts[4]=customText,
+--         parts[5]=additionalText, parts[6]=customNumber, parts[7+]=scriptValues
 -- ============================================================================
-local function SendCinematicBroadcastMessage(cinematicGuid, senderName, speakerName, customText, additionalText, customNumber, scriptValues)
-    if not cinematicGuid or not senderName or not speakerName then
+local function SendCinematicBroadcastMessage(cinematicGuid, senderName, customText, additionalText, customNumber, scriptValues)
+    if not cinematicGuid or not senderName then
         return false
     end
 
     local message = MESSAGE_TYPES.CINEMATIC .. MESSAGE_DELIMITER ..
                    cinematicGuid .. MESSAGE_DELIMITER ..
                    senderName .. MESSAGE_DELIMITER ..
-                   speakerName .. MESSAGE_DELIMITER ..
                    (customText or "") .. MESSAGE_DELIMITER ..
                    (additionalText or "") .. MESSAGE_DELIMITER ..
                    tostring(customNumber or 0)
 
-    -- Append script values as additional fields (parts[8+])
+    -- Append script values as additional fields (parts[7+])
     if scriptValues then
         for _, value in ipairs(scriptValues) do
             message = message .. MESSAGE_DELIMITER .. (value or "")

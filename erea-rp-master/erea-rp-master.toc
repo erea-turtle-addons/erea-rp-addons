@@ -2,7 +2,7 @@
 ## Title: E'rea RP Master
 ## Notes: Game Master addon for creating and distributing RP quest items
 ## Author: Erea
-## Version: 1.0.8
+## Version: 1.0.9
 ## DefaultState: disabled
 ## SavedVariables: EreaRpMasterDB, EreaRpMasterDebugLog, RPMasterDB, RPMasterDebugLog
 ## RequiredDeps: erea-rp-common

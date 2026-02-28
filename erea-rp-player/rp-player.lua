@@ -280,7 +280,6 @@ if RPPlayerDB and not EreaRpPlayerDB.migratedFromRPPlayerDB then
 
     EreaRpPlayerDB.migratedFromRPPlayerDB = true
     Log("Migration from RPPlayerDB complete")
-    DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r Your inventory has been imported from the previous addon.", 0, 1, 0)
 end
 
 -- ============================================================================

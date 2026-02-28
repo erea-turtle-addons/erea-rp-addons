@@ -129,21 +129,24 @@ local function ExecuteMerge(mergeGroup)
     -- Build combined sender list
     local combinedSenders = BuildSenderList(group.triggers)
 
-    -- Resolve placeholders in merged message template
-    local mergedText = libraryEntry.messageTemplate or ""
-    local playerNameList = BuildPlayerNameList(group.triggers)
-    mergedText = string.gsub(mergedText, "{playerName}", playerNameList)
-
-    local speakerName = libraryEntry.speakerName or ""
-    local animationKey = libraryEntry.animationKey or ""
-
-    -- Resolve scripts specified in additionalInfo
+    -- Resolve scripts specified in scriptReferences (comma-separated, Lua 5.0 compatible)
     local scriptValues = {}
-    if libraryEntry.additionalInfo and libraryEntry.additionalInfo ~= "" then
-        for scriptName in string.gfind(libraryEntry.additionalInfo, "([^%^]+)") do
+    if libraryEntry.scriptReferences and libraryEntry.scriptReferences ~= "" then
+        local refs = libraryEntry.scriptReferences
+        local i = 1
+        while i <= string.len(refs) do
+            local commaPos = string.find(refs, ",", i, true)
+            local scriptName
+            if commaPos then
+                scriptName = string.sub(refs, i, commaPos - 1)
+                i = commaPos + 1
+            else
+                scriptName = string.sub(refs, i)
+                i = string.len(refs) + 1
+            end
             local script = EreaRpMasterDB.scriptLibrary and EreaRpMasterDB.scriptLibrary[scriptName]
             if script then
-                local context = {playerName = playerNameList, customText = mergedText}
+                local context = {playerName = group.triggers[1].senderName, customText = ""}
                 local ok, result = EreaRpMasterScriptLibrary:ExecuteScriptBody(script.body, context)
                 table.insert(scriptValues, ok and result or "[error]")
             else
@@ -153,12 +156,11 @@ local function ExecuteMerge(mergeGroup)
     end
 
     Log("ExecuteMerge: mergeGroup=" .. mergeGroup .. " senders=" .. combinedSenders)
-    Log("ExecuteMerge: speakerName=" .. tostring(speakerName) .. " animationKey=" .. tostring(animationKey))
-    Log("ExecuteMerge: mergedText=" .. tostring(mergedText))
 
     -- Send merged CINEMATIC broadcast (mergeGroup serves as cinematicGuid for player-side lookup)
+    -- speakerName and message text are resolved on player side from cinematicLibrary
     Log("ExecuteMerge: sending merged CINEMATIC broadcast now")
-    messaging.SendCinematicBroadcastMessage(mergeGroup, combinedSenders, speakerName, mergedText, "", 0, scriptValues)
+    messaging.SendCinematicBroadcastMessage(mergeGroup, combinedSenders, "", "", 0, scriptValues)
     Log("ExecuteMerge: merged CINEMATIC broadcast sent")
 
     -- Clear buffer for this group

@@ -39,9 +39,6 @@ local Log = EreaRpLibraries:Logging("EreaRpMaster")
 local function HandleGiveAccept(sender, parts)
     local itemName = parts[2] or "unknown item"
 
-    DEFAULT_CHAT_FRAME:AddMessage(
-        "|cFF00FF00[RP Master]|r " .. sender .. " accepted '" .. itemName .. "'",
-        0, 1, 0)
     Log("GIVE_ACCEPT from " .. sender .. " for '" .. itemName .. "'")
 end
 
@@ -49,9 +46,6 @@ end
 local function HandleGiveReject(sender, parts)
     local itemName = parts[2] or "unknown item"
 
-    DEFAULT_CHAT_FRAME:AddMessage(
-        "|cFFFF4444[RP Master]|r " .. sender .. " declined '" .. itemName .. "'",
-        1, 0.3, 0.3)
     Log("GIVE_REJECT from " .. sender .. " for '" .. itemName .. "'")
 end
 
@@ -115,9 +109,9 @@ local function HandleCinematicTrigger(sender, parts)
         end
     end
 
-    -- Broadcast cinematic to all players (speakerName is raw template; substitution happens on player side)
-    messaging.SendCinematicBroadcastMessage(cinematicGuid, sender, cinematic.speakerName or "", customText, additionalText, customNumber, scriptValues)
-    Log("CINEMATIC_TRIGGER: broadcast sent for " .. cinematicGuid .. " speaker=" .. tostring(cinematic.speakerName))
+    -- Broadcast cinematic to all players (speakerName looked up from library on player side)
+    messaging.SendCinematicBroadcastMessage(cinematicGuid, sender, customText, additionalText, customNumber, scriptValues)
+    Log("CINEMATIC_TRIGGER: broadcast sent for " .. cinematicGuid)
 end
 
 -- ============================================================================
@@ -137,6 +131,8 @@ function EreaRpMasterEventHandler:Initialize()
         local sender  = arg4
 
         if prefix ~= messaging.ADDON_PREFIX then return end
+
+        Log("RECV from " .. tostring(sender) .. ": " .. tostring(message))
 
         local msgType, parts = messaging.ParseMessage(message)
         if not msgType then return end
@@ -216,13 +212,9 @@ function EreaRpMasterEventHandler:GiveItem(targetName, itemGuid, customMessage, 
 
     local success = messaging.SendGiveMessage(targetName, itemGuid, customMessage, customText, customNumber, additionalText)
     if success then
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFF00FF00[RP Master]|r Sent item to " .. targetName,
-            0, 1, 0)
+        Log("GiveItem: sent item to " .. targetName)
     else
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF0000[RP Master]|r Failed to send item to " .. tostring(targetName),
-            1, 0, 0)
+        Log("GiveItem: failed to send item to " .. tostring(targetName))
     end
 
     return success

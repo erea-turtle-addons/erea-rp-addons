@@ -345,7 +345,6 @@ end
 function EreaRpMasterItemLibrary:SyncToRaid()
     local committed = self:GetCommittedDatabase()
     if not committed then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r No committed database to sync. Commit first.", 1, 0, 0)
         return false
     end
 
@@ -353,13 +352,11 @@ function EreaRpMasterItemLibrary:SyncToRaid()
     local numRaidMembers = GetNumRaidMembers()
     local numPartyMembers = GetNumPartyMembers()
     if numRaidMembers == 0 and numPartyMembers == 0 then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r You must be in a party or raid to sync.", 1, 0, 0)
         return false
     end
 
     local messages = objectDatabase.CreateSyncMessageChunks(committed)
     if not messages then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Failed to create sync messages.", 1, 0, 0)
         return false
     end
 
@@ -377,6 +374,5 @@ function EreaRpMasterItemLibrary:SyncToRaid()
     end
 
     Log("Synced database to " .. distribution .. " (" .. msgCount .. " messages)")
-    DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Master]|r Database synced to " .. distribution .. " (" .. msgCount .. " messages).", 0, 1, 0)
     return true
 end

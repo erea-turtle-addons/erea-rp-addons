@@ -153,9 +153,6 @@ function EreaRpMasterItemEditorFrame:ResetPositions()
     -- Reset item editor window position
     self:ClearAllPoints()
     self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-    
-    -- Show confirmation message
-    DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Master]|r Item editor position reset to default", 0, 1, 0)
 end
 
 -- ============================================================================
@@ -245,25 +242,21 @@ function EreaRpMasterItemEditorFrame:Save()
 
     -- Validate: name required
     if name == "" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Item name is required.", 1, 0, 0)
         return
     end
 
     -- Validate: name length
     if string.len(name) > 50 then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Item name must be 50 characters or less.", 1, 0, 0)
         return
     end
 
     -- Validate: tooltip length
     if string.len(tooltip) > 120 then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Tooltip must be 120 characters or less.", 1, 0, 0)
         return
     end
 
     -- Validate: icon path
     if icon ~= "" and string.sub(icon, 1, 10) ~= "Interface\\" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Icon must start with Interface\\.", 1, 0, 0)
         return
     end
 

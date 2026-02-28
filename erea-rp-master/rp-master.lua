@@ -181,11 +181,6 @@ loadFrame:SetScript("OnEvent", function()
         -- Remove method types that no longer exist in METHOD_REGISTRY
         local sanitizeResult = rpActions.SanitizeItemLibrary(EreaRpMasterDB.itemLibrary)
         if sanitizeResult.methodsRemoved > 0 or sanitizeResult.actionsRemoved > 0 then
-            DEFAULT_CHAT_FRAME:AddMessage(
-                "|cFFFF8C00[RP Cleanup]|r Sanitized item library: " ..
-                sanitizeResult.methodsRemoved .. " obsolete method(s) removed, " ..
-                sanitizeResult.actionsRemoved .. " empty action(s) removed."
-            )
             Log("SanitizeItemLibrary: " .. sanitizeResult.methodsRemoved .. " methods, " .. sanitizeResult.actionsRemoved .. " actions removed")
         end
 

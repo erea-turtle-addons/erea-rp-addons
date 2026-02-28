@@ -112,21 +112,11 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             return  -- Ignore messages from other addons
         end
 
-        Log("OnEvent triggered - event type: " .. tostring(event))
-        Log("CHAT_MSG_ADDON received - prefix: " .. tostring(prefix) .. ", distribution: " .. tostring(distribution) .. ", sender: " .. tostring(sender))
-        Log("  message length: " .. tostring(string.len(encodedMessage or "")))
-        Log("Message: " .. encodedMessage)
+        Log("RECV from " .. tostring(sender) .. ": " .. tostring(encodedMessage))
 
         -- Parse message using messaging module
         -- Automatically handles Base64 decoding and caret-delimited parsing
         local messageType, parts = messaging.ParseMessage(encodedMessage)
-
-        Log("Message type: " .. tostring(messageType) .. ", parts count: " .. table.getn(parts))
-
-        -- Log all parts for debugging
-        for i = 1, table.getn(parts) do
-            Log("Part " .. i .. ": " .. tostring(parts[i]))
-        end
 
         -- Handle different message types (pattern similar to switch/case)
         if messageType == messaging.MESSAGE_TYPES.DB_SYNC_START then
@@ -139,7 +129,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
             -- Reject: name is empty
             if not incomingName or incomingName == "" then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Sync from " .. sender .. " rejected: database has no name.", 1, 0, 0)
                 Log("DB_SYNC_START rejected: empty database name from " .. sender)
                 return
             end
@@ -213,8 +202,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                 for _ in pairs(syncedDatabase.items) do
                     itemCount = itemCount + 1
                 end
-                DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FF00[RP Player]|r Database synced from %s: '%s' (%d items)",
-                    sender, syncedDatabase.metadata.name, itemCount), 0, 1, 0)
                 Log("Database synced successfully: " .. syncedDatabase.metadata.name .. " (" .. itemCount .. " items)")
 
                 -- Activate this database (updates syncState + refreshes bag)
@@ -225,7 +212,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             else
                 local errMsg = reason or "unknown"
                 Log("ERROR: ReassembleChunkedSync failed: " .. errMsg)
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Failed to reassemble database sync from " .. sender .. " (" .. errMsg .. ")", 1, 0, 0)
                 EreaRpPlayer_ChunkedSyncs[messageId] = nil
             end
 
@@ -250,8 +236,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             local activeDb = EreaRpPlayerDB.activeDatabaseId
                              and EreaRpPlayerDB.databases[EreaRpPlayerDB.activeDatabaseId]
             if not activeDb or not activeDb.items then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r No database active!", 1, 0, 0)
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFAA00[RP Player]|r Ask " .. sender .. " to click 'Sync to Raid' first.", 1, 1, 0)
                 Log("ERROR: No active database to look up item GUID: " .. itemGuid .. " from " .. sender)
                 return
             end
@@ -265,15 +249,12 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             end
 
             if not objectDef then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Item not found in database!", 1, 0, 0)
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFAA00[RP Player]|r Ask " .. sender .. " to click 'Sync to Raid' to update your database.", 1, 1, 0)
                 Log("ERROR: Item GUID not found in active database: " .. itemGuid .. " (database: " .. tostring(EreaRpPlayerDB.syncState.databaseName) .. ")")
                 return
             end
 
             -- Check if bag is full
             if inventory.IsBagFull(EreaRpPlayerDB.inventory) then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Bag is full! Cannot receive item.", 1, 0, 0)
                 Log("Bag is full, cannot receive item: " .. objectDef.name)
                 return
             end
@@ -328,8 +309,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
             if not objectDef then
                 -- Error: object not in database
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Object not found in database!", 1, 0, 0)
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFAA00[RP Player]|r Ask GM to 'Sync to Raid' first.", 1, 1, 0)
                 Log("TRADE failed: Object " .. objectGuid .. " not found in active database")
                 return
             end
@@ -346,7 +325,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             Log("TRADE inventory check - Current items: " .. currentCount .. ", Empty slots: " .. emptySlots .. ", IsBagFull: " .. tostring(isFull))
 
             if isFull then
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Bag is full! Cannot accept trade.", 1, 0, 0)
                 Log("Bag is full, cannot accept trade")
                 -- Debug: Log all items with their slots
                 for i, item in ipairs(EreaRpPlayerDB.inventory) do
@@ -399,8 +377,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
             if not objectDef then
                 -- Error: object not in database
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Object not found in database!", 1, 0, 0)
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFAA00[RP Player]|r Ask GM to 'Sync to Raid' first.", 1, 1, 0)
                 Log("SHOW failed: Object " .. objectGuid .. " not found in active database")
                 return
             end
@@ -446,9 +422,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
             Log("SHOW_REJECT received from " .. sender .. " for item: " .. tostring(itemName))
 
-            -- Display rejection message to the shower
-            DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFF0000[RP Player]|r %s rejected to view '%s'", sender, itemName), 1, 0.5, 0)
-
         elseif messageType == messaging.MESSAGE_TYPES.TRADE_ACCEPT then
             -- Format: TRADE_ACCEPT^targetName^itemName — sender (accepter) from arg4
             local targetName = parts[2]
@@ -462,9 +435,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
             end
 
             Log("TRADE_ACCEPT received from " .. sender .. " for item: " .. tostring(itemName))
-
-            -- Display acceptance message
-            DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FF00[RP Player]|r %s accepted your gift: '%s'", sender, itemName), 0, 1, 0)
 
             -- Remove pending outgoing trade if exists
             if EreaRpPlayer_PendingOutgoingTrade then
@@ -502,29 +472,45 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
             Log("TRADE_REJECT received from " .. sender .. " for item: " .. tostring(itemName))
 
-            -- Display rejection message
-            DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFF0000[RP Player]|r %s declined your gift: '%s'", sender, itemName), 1, 0.5, 0)
-
             -- Clear pending outgoing trade (item stays in inventory)
             EreaRpPlayer_PendingOutgoingTrade = nil
 
         elseif messageType == messaging.MESSAGE_TYPES.CINEMATIC then
-            -- Format: CINEMATIC^cinematicGuid^senderName^speakerName^customText^additionalText^customNumber^[sv1]^...
+            -- Format: CINEMATIC^cinematicGuid^senderName^customText^additionalText^customNumber^[sv1]^...
             -- senderName may be comma-separated for merge cinematics (e.g. "PlayerA,PlayerB")
+            -- speakerName is looked up from cinematicLibrary (not on wire)
             local cinematicGuid  = parts[2] or ""
             local senderName     = parts[3] or sender
-            local speakerName    = parts[4] or ""
-            local customText     = parts[5] or ""
-            local additionalText = parts[6] or ""
-            local customNumber   = tonumber(parts[7]) or 0
+            local customText     = parts[4] or ""
+            local additionalText = parts[5] or ""
+            local customNumber   = tonumber(parts[6]) or 0
 
-            -- Extract script values (all parts after index 7)
+            -- Extract script values (all parts after index 6)
             local scriptValues = {}
-            for i = 8, table.getn(parts) do
+            for i = 7, table.getn(parts) do
                 table.insert(scriptValues, parts[i])
             end
 
-            Log("CINEMATIC received cinematicGuid=" .. tostring(cinematicGuid) .. " from " .. tostring(senderName) .. " speaker=" .. tostring(speakerName))
+            -- Build natural-language list from comma-separated senders (e.g. "A,B,C" → "A, B and C")
+            -- Lua 5.0: use string.gfind instead of string.gmatch
+            local function BuildNaturalLanguageList(commaSeparated)
+                local names = {}
+                for name in string.gfind(commaSeparated, "([^,]+)") do
+                    table.insert(names, name)
+                end
+                local count = table.getn(names)
+                if count == 0 then return "" end
+                if count == 1 then return names[1] end
+                local result = names[1]
+                for i = 2, count - 1 do
+                    result = result .. ", " .. names[i]
+                end
+                return result .. " and " .. names[count]
+            end
+
+            local playerNameList = BuildNaturalLanguageList(senderName)
+
+            Log("CINEMATIC received cinematicGuid=" .. tostring(cinematicGuid) .. " from " .. tostring(senderName))
 
             -- Proximity check: show if ANY sender is nearby (~28 yards)
             -- Supports comma-separated sender list for merge cinematics
@@ -554,8 +540,8 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                     -- Resolve placeholders in message template
                     dialogueText = cinematic.messageTemplate or ""
                     -- Apply item placeholders first ({custom-text}, {additional-text}, {item-counter}, {player-name})
-                    dialogueText = objectDatabase.ApplyItemPlaceholders(dialogueText, customText, additionalText, customNumber, senderName)
-                    dialogueText = string.gsub(dialogueText, "{playerName}", senderName)
+                    dialogueText = objectDatabase.ApplyItemPlaceholders(dialogueText, customText, additionalText, customNumber, playerNameList)
+                    dialogueText = string.gsub(dialogueText, "{playerName}", playerNameList)
                     dialogueText = string.gsub(dialogueText, "{customText}", customText)
                     
                     -- Replace {script:XXX} placeholders with received script values
@@ -648,8 +634,10 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
                     Log("CINEMATIC: legacy format, anim=" .. tostring(animKey))
                 end
 
-                -- Resolve item placeholders in speakerName (template may contain {custom-text}, {player-name} etc.)
-                local resolvedSpeaker = objectDatabase.ApplyItemPlaceholders(speakerName, customText, additionalText, customNumber, senderName)
+                -- Look up speakerName from library and resolve placeholders
+                local resolvedSpeaker = objectDatabase.ApplyItemPlaceholders(
+                    cinematic and cinematic.speakerName or "",
+                    customText, additionalText, customNumber, playerNameList)
                 EreaRpCinematicFrame:ShowDialogue(senderName, resolvedSpeaker, dialogueText, leftConfig, rightConfig)
             end
 
@@ -788,11 +776,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
         end
         Log("PLAYER_LOGIN event fired")
 
-        -- This event fires once after SavedVariables are loaded
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFD700[RP Player] Version: " .. ADDON_VERSION .. "|r")
-        DEFAULT_CHAT_FRAME:AddMessage("|cFF00FFFF[RP Player]|r Commands: /rpplayer, /rpplayer log, /rpplayer clean", 0, 1, 1)
-        Log("Version message displayed")
-
         -- Check if EreaRpPlayerDB exists
         if EreaRpPlayerDB then
             Log("EreaRpPlayerDB exists: " .. type(EreaRpPlayerDB))
@@ -818,7 +801,6 @@ eventFrame:SetScript("OnEvent", function()  -- Event handler callback
 
         if migrated then
             Log("Inventory migrated to v0.1.1 format")
-            DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r Inventory migrated to v0.1.1", 0, 1, 0)
         end
 
         -- Check if system-welcome-db inventory is empty and add welcome item if needed
@@ -865,8 +847,6 @@ function EreaRpPlayerEventHandler:ResetPositions()
     -- Reset read frame
     EreaRpPlayerReadFrame:ClearAllPoints()
     EreaRpPlayerReadFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-
-    DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r Frame positions reset to default", 0, 1, 0)
 end
 
 -- ============================================================================
@@ -886,7 +866,6 @@ end
 -- ============================================================================
 function EreaRpPlayerEventHandler:CleanupDuplicateSlots()
     if not EreaRpPlayerDB or not EreaRpPlayerDB.inventory then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r No inventory to clean")
         return
     end
 
@@ -915,8 +894,6 @@ function EreaRpPlayerEventHandler:CleanupDuplicateSlots()
                     end
                 end
 
-                -- Warn player (orange text)
-                DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFF9900[RP Player]|r More than one item in slot %d, removed '%s'", item.slot, itemName), 1, 0.6, 0)
                 Log("Cleanup: Removed duplicate item '" .. itemName .. "' from slot " .. item.slot)
             else
                 -- First occurrence - keep it
@@ -933,11 +910,9 @@ function EreaRpPlayerEventHandler:CleanupDuplicateSlots()
     -- Report results
     local removedCount = table.getn(toRemove)
     if removedCount > 0 then
-        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FF00[RP Player]|r Cleanup complete: removed %d duplicate item(s)", removedCount), 0, 1, 0)
         Log("Cleanup complete: removed " .. removedCount .. " duplicates")
         EreaRpPlayerInventory:RefreshBag()
     else
-        DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Player]|r No duplicates found", 0, 1, 0)
         Log("Cleanup: No duplicates found")
     end
 end

@@ -357,17 +357,11 @@ function EreaRpPlayerInventory:ShowItem(item, targetName, silent)
     local success = messaging.SendShowMessage(targetName, item)
 
     if not success then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Failed to send show message!", 1, 0, 0)
         Log("ERROR: Failed to send SHOW message")
         return
     end
 
     Log("SHOW message sent for item: " .. item.name)
-
-    -- Display feedback to user (unless silent for batch operations)
-    if not silent then
-        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FFFF[RP Player]|r Offering to show '%s' to %s (waiting for response)...", item.name, targetName), 0, 1, 1)
-    end
 end
 
 -- Delete item from inventory
@@ -383,7 +377,6 @@ function EreaRpPlayerInventory:DeleteItem(item)
     end
 
     self:RefreshBag()
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFFFF0000[RP Player]|r You deleted: %s", item.name), 1, 0.5, 0)
     Log("Item deleted successfully")
 end
 
@@ -396,7 +389,6 @@ function EreaRpPlayerInventory:TradeItem(item, targetName)
     local success = messaging.SendTradeMessage(targetName, item)
 
     if not success then
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Player]|r Failed to send trade message!", 1, 0, 0)
         Log("ERROR: Failed to send TRADE message")
         return
     end
@@ -406,9 +398,6 @@ function EreaRpPlayerInventory:TradeItem(item, targetName)
     -- Store pending trade (will be removed on acceptance)
     -- Global state in rp-player.lua
     EreaRpPlayer_PendingOutgoingTrade = item
-
-    -- Display feedback to user
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FF00[RP Player]|r Offering '%s' to %s (waiting for response)...", item.name, targetName), 0, 1, 0)
 end
 
 -- Read item (open read frame)
@@ -607,16 +596,8 @@ function EreaRpPlayerInventory:ShowContextMenu(item, anchorFrame)
                 func = function()
                     -- Show to all players in range (iterate through the list)
                     local item = RPPlayerContextMenuFrame.contextItem
-                    local playerNames = {}
                     for _, playerName in ipairs(RPPlayerContextMenuFrame.raidMembers) do
                         EreaRpPlayerInventory:ShowItem(item, playerName, true)  -- silent = true to suppress individual messages
-                        table.insert(playerNames, playerName)
-                    end
-                    if table.getn(playerNames) > 0 then
-                        local namesList = table.concat(playerNames, ", ")
-                        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FFFF[RP Player]|r Offering to show '%s' to: %s (waiting for responses)...", item.name, namesList), 0, 1, 1)
-                    else
-                        DEFAULT_CHAT_FRAME:AddMessage(string.format("|cFF00FFFF[RP Player]|r No nearby players to show '%s'", item.name), 0, 1, 1)
                     end
                 end,
                 notCheckable = 1

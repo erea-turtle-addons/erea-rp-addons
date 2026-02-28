@@ -17,6 +17,11 @@
 -- ============================================================================
 
 -- ============================================================================
+-- Imports
+-- ============================================================================
+local Log = EreaRpLibraries:Logging("EreaRpMaster")
+
+-- ============================================================================
 -- Local state
 -- ============================================================================
 local _selectedPlayer = nil
@@ -171,21 +176,18 @@ function EreaRpMasterGiveItemFrame:GiveCurrentItem()
     local self = EreaRpMasterGiveItemFrame
 
     if not _selectedPlayer then
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF4444[RP Master]|r Please select a player first.", 1, 0.3, 0.3)
+        Log("GiveCurrentItem: no player selected")
         return
     end
 
     if not _currentItem or not _currentItem.guid then
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF4444[RP Master]|r No item selected.", 1, 0.3, 0.3)
+        Log("GiveCurrentItem: no item selected")
         return
     end
 
     -- Must be in a group or raid
     if GetNumRaidMembers() == 0 and GetNumPartyMembers() == 0 then
-        DEFAULT_CHAT_FRAME:AddMessage(
-            "|cFFFF4444[RP Master]|r Must be in a group or raid to give items.", 1, 0.3, 0.3)
+        Log("GiveCurrentItem: not in a group or raid")
         return
     end
 

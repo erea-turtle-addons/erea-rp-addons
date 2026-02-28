@@ -69,9 +69,6 @@ function EreaRpMasterItemListFrame:Initialize()
         local ok, err = EreaRpMasterItemLibrary:CommitDatabase()
         if ok then
             EreaRpMasterItemListFrame:RefreshList()
-            DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00[RP Master]|r Database committed.", 0, 1, 0)
-        else
-            DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RP Master]|r Cannot commit: " .. (err or "unknown error"), 1, 0, 0)
         end
     end)
 
